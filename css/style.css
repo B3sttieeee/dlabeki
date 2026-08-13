@@ -10,6 +10,8 @@
     --accent-blue: #38bdf8;
     --accent-red: #ef4444;
     --accent-gold: #fbbf24;
+    --accent-purple: #c084fc;
+    --accent-green: #22c55e;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -22,159 +24,85 @@ body {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    zoom: 1; /* Kontrolowane przez JS */
 }
 
-/* --- GŁÓWNA NAWIGACJA (TOP) --- */
-.nasa-nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: var(--bg-surface);
-    border-bottom: 1px solid var(--border-dim);
-    padding: 0 20px;
-    height: 70px;
-    flex-shrink: 0;
-}
+/* POMOCNICZE */
+.text-accent { color: var(--accent-blue); }
+.text-gold { color: var(--accent-gold); }
+.text-red { color: var(--accent-red); }
+.text-purple { color: var(--accent-purple); }
+.text-green { color: var(--accent-green); }
+.text-bold { font-weight: bold; }
+.text-right { text-align: right; }
+.text-center { text-align: center; }
+.mt-10 { margin-top: 10px; } .mt-20 { margin-top: 20px; } .mt-40 { margin-top: 40px; } .mb-20 { margin-bottom: 20px; }
 
-.nav-brand {
-    font-size: 1.5rem;
-    color: var(--accent-blue);
-    letter-spacing: 2px;
-}
-
-.nav-tabs {
-    display: flex;
-    height: 100%;
-}
-
-.tab-btn {
-    background: transparent;
-    border: none;
-    color: var(--text-dim);
-    font-family: inherit;
-    font-size: 1.1rem;
-    padding: 0 20px;
-    cursor: pointer;
-    height: 100%;
-    border-bottom: 3px solid transparent;
-    transition: all 0.2s;
-}
-
+/* NAWIGACJA */
+.nasa-nav { display: flex; justify-content: space-between; align-items: center; background: var(--bg-surface); border-bottom: 1px solid var(--border-dim); padding: 0 20px; height: 60px; flex-shrink: 0; }
+.nav-brand { font-size: 1.5rem; color: var(--accent-blue); letter-spacing: 2px; }
+.nav-tabs { display: flex; height: 100%; }
+.tab-btn { background: transparent; border: none; color: var(--text-dim); font-family: inherit; font-size: 1rem; padding: 0 15px; cursor: pointer; height: 100%; border-bottom: 3px solid transparent; transition: all 0.2s; }
 .tab-btn:hover { color: var(--text-bright); background: rgba(56, 189, 248, 0.05); }
-.tab-btn.active {
-    color: var(--accent-blue);
-    border-bottom: 3px solid var(--accent-blue);
-    background: rgba(56, 189, 248, 0.1);
-}
+.tab-btn.active { color: var(--accent-blue); border-bottom: 3px solid var(--accent-blue); background: rgba(56, 189, 248, 0.1); }
 
-.nav-stats { display: flex; gap: 20px; }
-.stat-box {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    background: #000;
-    padding: 5px 15px;
-    border: 1px solid var(--border-dim);
-}
-.stat-box .label { font-size: 0.7rem; color: var(--text-dim); }
-.stat-box .value { font-size: 1.2rem; }
-.gold { color: var(--accent-gold); }
-.dmg { color: #f87171; }
-.dps { color: #c084fc; }
+/* GLOBAL STATUS BAR */
+.global-status-bar { display: flex; gap: 30px; padding: 15px 30px; background: #000; border-bottom: 1px solid var(--border-dim); font-size: 1.1rem; flex-shrink: 0; align-items: center; }
+.status-module { display: flex; align-items: center; gap: 15px; flex-grow: 1; }
+.stats-mini { justify-content: flex-end; font-weight: bold; }
+.bar-container { flex-grow: 1; height: 20px; background: #111; border: 1px solid var(--border-dim); position: relative; }
+.bar-fill { height: 100%; width: 0%; transition: width 0.2s linear; }
+.exp-fill { background: var(--accent-blue); }
+.player-hp-fill { background: var(--accent-green); }
+.enemy-hp-fill { background: var(--accent-red); }
 
-/* --- PRZESTRZEŃ ROBOCZA (100% ekranu) --- */
-.workspace {
-    flex-grow: 1;
-    position: relative;
-    overflow: hidden; /* Zakładki mają własny scroll, jeśli trzeba */
-}
-
-.screen {
-    display: none;
-    width: 100%;
-    height: 100%;
-    padding: 40px;
-    animation: bootUp 0.3s ease-out;
-}
+/* PRZESTRZEŃ ROBOCZA */
+.workspace { flex-grow: 1; position: relative; overflow-y: auto; }
+.screen { display: none; width: 100%; min-height: 100%; padding: 40px; animation: bootUp 0.2s ease-out; }
 .screen.active { display: flex; flex-direction: column; }
 .screen.split-screen { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+@keyframes bootUp { from { opacity: 0; } to { opacity: 1; } }
+.screen-title { font-size: 2rem; border-bottom: 1px solid var(--border-dim); padding-bottom: 10px; margin-bottom: 30px; text-transform: uppercase; letter-spacing: 2px; }
 
-@keyframes bootUp {
-    0% { opacity: 0; transform: scale(0.98); }
-    100% { opacity: 1; transform: scale(1); }
-}
-
-.screen-title { font-size: 2rem; border-bottom: 1px solid var(--border-dim); padding-bottom: 10px; margin-bottom: 40px; text-transform: uppercase; letter-spacing: 2px; }
-.text-center { text-align: center; }
-
-/* --- MODUŁY CENTRALNE (Kopalnia, Gacha) --- */
-.center-module {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
-
-.mine-interact, .egg-interact {
-    font-size: 10rem;
-    cursor: pointer;
-    user-select: none;
-    transition: transform 0.1s;
-    filter: drop-shadow(0 0 20px rgba(255,255,255,0.1));
-}
+/* MODUŁY CENTRALNE */
+.center-module { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+.mine-interact, .egg-interact { font-size: 10rem; cursor: pointer; user-select: none; transition: transform 0.1s; filter: drop-shadow(0 0 20px rgba(255,255,255,0.1)); margin-bottom: 30px; }
 .mine-interact:active { transform: scale(0.95); }
 .egg-interact:hover { transform: scale(1.05); }
 
-/* --- EKSPEDYCJE (Walka) --- */
-.combat-arena { display: flex; flex-direction: column; justify-content: center; }
+/* WALKA */
 .target-lock { border: 1px solid var(--accent-red); padding: 40px; background: rgba(239, 68, 68, 0.05); margin-bottom: 30px; }
 #monster-name { color: var(--accent-red); font-size: 2rem; margin-bottom: 20px; }
-
-.nasa-hp-bar { width: 100%; height: 30px; background: #000; border: 1px solid var(--border-dim); margin-bottom: 10px; position: relative; }
-.hp-fill { height: 100%; background: var(--accent-red); width: 100%; transition: width 0.1s linear; }
-.hp-readout { text-align: right; color: var(--text-dim); }
-
-.engage-btn {
-    background: transparent; border: 2px solid var(--accent-blue); color: var(--accent-blue);
-    font-family: inherit; font-size: 1.5rem; padding: 20px; cursor: pointer; transition: all 0.2s;
-    text-transform: uppercase; letter-spacing: 2px;
-}
+.engage-btn { background: transparent; border: 2px solid var(--accent-blue); color: var(--accent-blue); font-family: inherit; font-size: 1.5rem; padding: 20px; cursor: pointer; transition: all 0.2s; text-transform: uppercase; width: 100%; }
 .engage-btn:hover { background: var(--accent-blue); color: #000; box-shadow: 0 0 20px var(--accent-blue); }
+.engage-btn:disabled { border-color: #555; color: #555; cursor: not-allowed; box-shadow: none; background: transparent; }
 
 .telemetry-log { border-left: 1px solid var(--border-dim); padding-left: 40px; display: flex; flex-direction: column; }
-.telemetry-log h3 { color: var(--text-dim); margin-bottom: 20px; }
-.log-output { flex-grow: 1; background: #000; border: 1px solid var(--border-dim); padding: 20px; overflow-y: auto; font-size: 0.9rem; line-height: 1.6; }
-.log-time { color: var(--text-dim); }
+.log-output { flex-grow: 1; background: #000; border: 1px solid var(--border-dim); padding: 20px; overflow-y: auto; font-size: 0.95rem; line-height: 1.6; height: 500px; }
 
-/* --- EKWIPUNEK --- */
-.loadout-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 400px; margin: 0 auto; }
-.gear-slot {
-    aspect-ratio: 1; background: #000; border: 1px dashed var(--text-dim); display: flex;
-    justify-content: center; align-items: center; font-size: 3rem; cursor: pointer; transition: 0.2s;
-}
+/* EKWIPUNEK */
+.loadout-grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
+.gear-slot { width: 100px; height: 100px; background: #000; border: 1px dashed var(--text-dim); display: flex; justify-content: center; align-items: center; font-size: 3rem; cursor: pointer; transition: 0.2s; position: relative; }
 .gear-slot:hover { border-color: var(--accent-blue); }
-
 .inventory-storage { border-left: 1px solid var(--border-dim); padding-left: 40px; display: flex; flex-direction: column; }
-.storage-grid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 15px;
-    background: #000; padding: 20px; border: 1px solid var(--border-dim); flex-grow: 1; align-content: start; overflow-y: auto;
-}
-.item-card {
-    aspect-ratio: 1; background: var(--bg-surface); border: 1px solid var(--border-dim);
-    display: flex; justify-content: center; align-items: center; font-size: 2.5rem; cursor: pointer;
-}
+.storage-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 15px; background: #000; padding: 20px; border: 1px solid var(--border-dim); align-content: start; min-height: 400px; }
+.item-card { aspect-ratio: 1; background: var(--bg-surface); border: 1px solid var(--border-dim); display: flex; justify-content: center; align-items: center; font-size: 2.5rem; cursor: pointer; position: relative; }
 .item-card:hover { border-color: var(--text-bright); z-index: 10; }
 
-/* KOLORY RZADKOŚCI */
 .tier-common { border-color: #64748b !important; }
 .tier-rare { border-color: #38bdf8 !important; box-shadow: inset 0 0 10px rgba(56,189,248,0.2); }
 .tier-epic { border-color: #c084fc !important; box-shadow: inset 0 0 10px rgba(192,132,252,0.3); }
 .tier-legendary { border-color: #fbbf24 !important; box-shadow: inset 0 0 15px rgba(251,191,36,0.4); }
 .tier-mythic { border-color: #ef4444 !important; box-shadow: 0 0 10px #ef4444, inset 0 0 15px #ef4444; }
 
-/* --- SKLEP --- */
-.shop-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; max-width: 1000px; margin: 0 auto; }
-.shop-card { background: #000; border: 1px solid var(--border-dim); padding: 30px; display: flex; flex-direction: column; gap: 15px; text-align: center; }
-.buy-btn { background: var(--border-dim); border: none; color: var(--text-bright); padding: 15px; font-family: inherit; font-size: 1rem; cursor: pointer; transition: 0.2s; }
+/* SKLEP & SKILLE */
+.shop-grid, .skill-tree { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+.shop-card, .skill-node { background: #000; border: 1px solid var(--border-dim); padding: 30px; display: flex; flex-direction: column; text-align: center; justify-content: center; }
+.shop-card h3, .skill-node h3 { color: var(--accent-blue); margin-bottom: 10px; }
+.buy-btn { background: var(--border-dim); border: none; color: var(--text-bright); padding: 12px; margin-top: auto; font-family: inherit; font-size: 1rem; cursor: pointer; transition: 0.2s; }
 .buy-btn:hover { background: var(--accent-gold); color: #000; }
+
+/* USTAWIENIA */
+.settings-panel { max-width: 600px; margin: 0 auto; background: #000; padding: 40px; border: 1px solid var(--border-dim); }
+.slider { width: 100%; margin-top: 15px; cursor: pointer; }
+.stats-panel { background: #000; padding: 20px; border: 1px solid var(--border-dim); line-height: 1.8; font-size: 1.1rem; }

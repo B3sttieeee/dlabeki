@@ -7,111 +7,166 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <!-- GŁÓWNY PANEL NAWIGACYJNY (Zawsze na górze) -->
     <header class="nasa-nav">
         <div class="nav-brand">D&E // TERMINAL</div>
-        
         <div class="nav-tabs">
             <button class="tab-btn active" onclick="openTab('tab-mine')">[01] KOPALNIA</button>
             <button class="tab-btn" onclick="openTab('tab-combat')">[02] EKSPEDYCJE</button>
-            <button class="tab-btn" onclick="openTab('tab-gacha')">[03] OŁTARZ (GACHA)</button>
+            <button class="tab-btn" onclick="openTab('tab-gacha')">[03] OŁTARZ</button>
             <button class="tab-btn" onclick="openTab('tab-inventory')">[04] EKWIPUNEK</button>
             <button class="tab-btn" onclick="openTab('tab-shop')">[05] SKLEP</button>
-        </div>
-
-        <div class="nav-stats">
-            <div class="stat-box"><span class="label">ZŁOTO</span><span id="gold-amount" class="value gold">0</span></div>
-            <div class="stat-box"><span class="label">DMG</span><span id="click-dmg" class="value dmg">10</span></div>
-            <div class="stat-box"><span class="label">DPS</span><span id="auto-dps" class="value dps">0</span></div>
+            <button class="tab-btn" onclick="openTab('tab-skills')">[06] UMIEJĘTNOŚCI</button>
+            <button class="tab-btn" onclick="openTab('tab-settings')">[07] USTAWIENIA</button>
         </div>
     </header>
 
-    <!-- PRZESTRZEŃ ROBOCZA (Tylko jedna sekcja jest widoczna naraz i zajmuje 100% ekranu) -->
-    <main class="workspace">
+    <!-- Pasek statusu gracza (Zawsze widoczny pod nawigacją) -->
+    <div class="global-status-bar">
+        <div class="status-module">
+            <span>LVL: <span id="player-level" class="text-accent">1</span></span>
+            <div class="bar-container"><div id="exp-bar" class="bar-fill exp-fill"></div></div>
+            <span>EXP: <span id="player-exp">0</span> / <span id="player-max-exp">100</span></span>
+        </div>
+        <div class="status-module">
+            <span>HP GRACZA:</span>
+            <div class="bar-container"><div id="player-hp-bar" class="bar-fill player-hp-fill"></div></div>
+            <span><span id="player-current-hp">100</span> / <span id="player-max-hp">100</span></span>
+        </div>
+        <div class="status-module stats-mini">
+            <span>ZŁOTO: <span id="gold-amount" class="text-gold">0</span> 🪙</span>
+            <span>DMG: <span id="click-dmg" class="text-red">10</span></span>
+            <span>DPS: <span id="auto-dps" class="text-purple">0</span></span>
+        </div>
+    </div>
 
+    <main class="workspace">
         <!-- [01] KOPALNIA -->
         <section id="tab-mine" class="screen active">
             <div class="center-module">
                 <h1 class="screen-title">SEKTOR WYDOBYWCZY</h1>
-                <div class="mine-interact" onclick="mineGold()">
-                    <div class="rock">🪨</div>
-                </div>
-                <p class="sys-text">Nawiązano połączenie. Rozpocznij wydobycie manualne.</p>
+                <div class="mine-interact" onclick="mineGold()">🪨</div>
+                <p class="sys-text">Wydobywaj surowce (Bazuje na mocy kliknięcia).</p>
             </div>
         </section>
 
-        <!-- [02] EKSPEDYCJE -->
+        <!-- [02] EKSPEDYCJE (Walka 2-stronna) -->
         <section id="tab-combat" class="screen split-screen">
             <div class="combat-arena">
-                <h1 class="screen-title">STREFA ZAGROŻENIA: POZIOM <span id="dungeon-level">1</span></h1>
-                
+                <h1 class="screen-title">STREFA ZAGROŻENIA: LVL <span id="dungeon-level">1</span></h1>
                 <div class="target-lock">
                     <h2 id="monster-name">CEL: Brak Danych</h2>
-                    <div class="nasa-hp-bar">
-                        <div id="monster-hp" class="hp-fill"></div>
-                    </div>
-                    <div class="hp-readout"><span id="current-hp">0</span> / <span id="max-hp">0</span> HP</div>
+                    <div class="bar-container"><div id="monster-hp" class="bar-fill enemy-hp-fill"></div></div>
+                    <div class="text-right">HP CELU: <span id="current-hp">0</span> / <span id="max-hp">0</span></div>
                 </div>
-
-                <button class="engage-btn" onclick="playerAttack()">ZAINICJUJ ATAK</button>
+                <button class="engage-btn" id="attack-btn" onclick="playerAttack()">ZADAJ CIOS ⚔️</button>
             </div>
-            
             <div class="telemetry-log">
                 <h3>// TELEMETRIA WALKI</h3>
                 <div id="battle-log" class="log-output"></div>
             </div>
         </section>
 
-        <!-- [03] OŁTARZ (GACHA) -->
+        <!-- [03] OŁTARZ -->
         <section id="tab-gacha" class="screen">
             <div class="center-module">
                 <h1 class="screen-title">GENERATOR MATERII</h1>
                 <div class="egg-interact" id="main-egg">🥚</div>
-                <div class="gacha-controls">
-                    <button class="engage-btn gacha-btn" onclick="openEgg()">POBIERZ SCHEMAT (500 ZŁOTA)</button>
-                </div>
+                <button class="engage-btn mt-20" onclick="openEgg()">POBIERZ SCHEMAT (500 🪙)</button>
             </div>
         </section>
 
-        <!-- [04] EKWIPUNEK -->
+        <!-- [04] EKWIPUNEK (Dodane sloty) -->
         <section id="tab-inventory" class="screen split-screen">
             <div class="character-loadout">
-                <h1 class="screen-title">ZAAWANSOWANY SYSTEM OSŁON</h1>
+                <h1 class="screen-title">OSPRZĘT BOJOWY</h1>
                 <div class="loadout-grid">
-                    <div class="gear-slot" id="slot-head">🪖</div>
-                    <div class="gear-slot" id="slot-armor">👕</div>
-                    <div class="gear-slot" id="slot-weapon">🗡️</div>
+                    <div class="gear-slot" id="slot-head" title="Hełm">🪖</div>
+                    <div class="gear-slot" id="slot-armor" title="Zbroja">👕</div>
+                    <div class="gear-slot" id="slot-weapon" title="Broń">🗡️</div>
+                    <div class="gear-slot" id="slot-amulet" title="Amulet">🧿</div>
+                    <div class="gear-slot" id="slot-ring" title="Pierścień">💍</div>
+                </div>
+                <div class="stats-panel mt-20" id="advanced-stats">
+                    <!-- Tu ładują się statystyki z JS -->
                 </div>
             </div>
-            
             <div class="inventory-storage">
-                <h3>// MAGAZYN LOKALNY</h3>
-                <div id="inventory-grid" class="storage-grid">
-                    <!-- Moduły trafiają tutaj -->
-                </div>
+                <h3>// MAGAZYN</h3>
+                <div id="inventory-grid" class="storage-grid"></div>
             </div>
         </section>
 
-        <!-- [05] SKLEP -->
+        <!-- [05] SKLEP (Naprawiony) -->
         <section id="tab-shop" class="screen">
-            <h1 class="screen-title text-center">MODUŁY ULEPSZEŃ</h1>
+            <h1 class="screen-title text-center">RYNEK CZARNEJ MATERII</h1>
             <div class="shop-grid">
                 <div class="shop-card">
                     <h3>Wzmacniacz Kinetyczny</h3>
                     <p>+3 Złota na kliknięcie</p>
-                    <button class="buy-btn" onclick="buyUpgrade('pickaxe')">ZATWIERDŹ (KOSZT: <span id="cost-pickaxe">100</span>)</button>
+                    <button class="buy-btn" onclick="buyUpgrade('pickaxe')">KUP (KOSZT: <span id="cost-pickaxe">100</span>)</button>
                 </div>
                 <div class="shop-card">
-                    <h3>Dron Bojowy (Auto-DPS)</h3>
-                    <p>+15 DPS (Obrażenia Pasywne)</p>
-                    <button class="buy-btn" onclick="buyUpgrade('mercenary')">ZATWIERDŹ (KOSZT: <span id="cost-merc">500</span>)</button>
+                    <h3>Dron Bojowy</h3>
+                    <p>+15 DPS (Atak automatyczny)</p>
+                    <button class="buy-btn" onclick="buyUpgrade('mercenary')">KUP (KOSZT: <span id="cost-merc">500</span>)</button>
+                </div>
+                <div class="shop-card">
+                    <h3>Paczka Medyczna</h3>
+                    <p>Leczy 50% max HP</p>
+                    <button class="buy-btn" onclick="buyUpgrade('heal')">KUP (KOSZT: 200)</button>
                 </div>
             </div>
         </section>
 
+        <!-- [06] DRZEWKO UMIEJĘTNOŚCI -->
+        <section id="tab-skills" class="screen">
+            <h1 class="screen-title text-center">RDZEŃ NEURONOWY</h1>
+            <p class="text-center mb-20">Dostępne punkty umiejętności: <span id="skill-points" class="text-accent text-bold" style="font-size: 1.5rem;">0</span></p>
+            <div class="skill-tree">
+                <div class="skill-node">
+                    <h3>Witalność</h3>
+                    <p>+20 Max HP</p>
+                    <p>Poziom: <span id="skill-lvl-hp">0</span>/50</p>
+                    <button class="buy-btn mt-10" onclick="upgradeSkill('hp')">Ulepsz (1 PKT)</button>
+                </div>
+                <div class="skill-node">
+                    <h3>Furia</h3>
+                    <p>+10 Bazowego DMG</p>
+                    <p>Poziom: <span id="skill-lvl-dmg">0</span>/50</p>
+                    <button class="buy-btn mt-10" onclick="upgradeSkill('dmg')">Ulepsz (1 PKT)</button>
+                </div>
+                <div class="skill-node">
+                    <h3>Wampiryzm</h3>
+                    <p>+1% Kradzieży Życia</p>
+                    <p>Poziom: <span id="skill-lvl-lifesteal">0</span>/20</p>
+                    <button class="buy-btn mt-10" onclick="upgradeSkill('lifesteal')">Ulepsz (1 PKT)</button>
+                </div>
+                <div class="skill-node">
+                    <h3>Precyzja</h3>
+                    <p>+2% Szansy na Krytyk</p>
+                    <p>Poziom: <span id="skill-lvl-crit">0</span>/25</p>
+                    <button class="buy-btn mt-10" onclick="upgradeSkill('crit')">Ulepsz (1 PKT)</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- [07] USTAWIENIA -->
+        <section id="tab-settings" class="screen">
+            <h1 class="screen-title text-center">KONFIGURACJA SYSTEMU</h1>
+            <div class="settings-panel">
+                <div class="setting-item">
+                    <label>Skalowanie Interfejsu (Zoom): <span id="zoom-val">100%</span></label>
+                    <input type="range" min="50" max="150" value="100" class="slider" id="gui-slider" oninput="changeZoom(this.value)">
+                </div>
+                <div class="setting-item mt-40">
+                    <h3 class="text-red">STREFA NIEBEZPIECZNA</h3>
+                    <p>Usunięcie zapisu jest nieodwracalne.</p>
+                    <button class="engage-btn" style="border-color: red; color: red;" onclick="hardReset()">FORMATUJ ZAPIS GRY</button>
+                </div>
+            </div>
+        </section>
     </main>
 
-    <!-- Skrypty NASA -->
     <script src="js/core.js"></script>
     <script src="js/inventory.js"></script>
     <script src="js/gacha.js"></script>
