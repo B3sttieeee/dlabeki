@@ -7,58 +7,101 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+    <!-- GÓRNY PASEK STATYSTYK -->
     <header class="topbar">
-        <h1>Dungeons & Eggs</h1>
+        <div class="logo">🗡️ D&E</div>
         <div class="stats">
             <span class="gold">🪙 Złoto: <span id="gold-amount">0</span></span>
-            <span class="dmg">⚔️ DMG: <span id="player-dmg">10</span></span>
+            <span class="dmg">⚔️ DMG z Kliknięcia: <span id="click-dmg">10</span></span>
+            <span class="dps">🔥 DPS (Auto): <span id="auto-dps">0</span></span>
         </div>
     </header>
 
-    <main class="game-container">
-        <!-- LEWY PANEL: Kopalnia -->
-        <section class="panel mine-panel">
-            <h2>Kopalnia</h2>
-            <div class="mine-area" onclick="mineGold()">
-                <div class="rock">🪨</div>
-                <p>Klikaj, aby kopać!</p>
-            </div>
-            <div class="upgrades">
-                <button onclick="upgradePickaxe()">Ulepsz kilof (Koszt: 100 🪙)</button>
-            </div>
-        </section>
+    <div class="main-layout">
+        <!-- BOCZNE MENU (ZAKŁADKI) -->
+        <nav class="sidebar">
+            <button class="tab-btn active" onclick="openTab('tab-mine')">⛏️ Kopalnia</button>
+            <button class="tab-btn" onclick="openTab('tab-dungeon')">🗺️ Ekspedycje (Dungeony)</button>
+            <button class="tab-btn" onclick="openTab('tab-gacha')">🎰 Ruletka (Jajka)</button>
+            <button class="tab-btn" onclick="openTab('tab-shop')">⚒️ Kuźnia (Sklep)</button>
+            <button class="tab-btn" onclick="openTab('tab-character')">👤 Postać i Ekwipunek</button>
+        </nav>
 
-        <!-- ŚRODKOWY PANEL: Akcja (Gacha i Walka) -->
-        <section class="panel action-panel">
-            <h2>Ołtarz Losu</h2>
-            <div class="gacha-area">
-                <div class="egg" id="main-egg" onclick="openEgg()">🥚</div>
-                <button class="gacha-btn" onclick="openEgg()">Otwórz Jajko (500 🪙)</button>
-            </div>
+        <!-- OBSZAR ROBOCZY (TUTAJ ZMIENIA SIĘ WIDOK) -->
+        <main class="content-area">
             
-            <div class="combat-area mt-20">
-                <h2>Ekspedycja: Dungeony</h2>
-                <div class="monster-card">
-                    <h3>Goblin Zwiadowca</h3>
-                    <div class="hp-bar"><div class="hp-fill" id="monster-hp" style="width: 100%;"></div></div>
+            <!-- ZAKŁADKA 1: KOPALNIA -->
+            <section id="tab-mine" class="tab-content active">
+                <h2>Kopalnia Głuszca</h2>
+                <div class="mine-container" onclick="mineGold()">
+                    <div class="rock">🪨</div>
+                    <p class="mt-20">Klikaj, aby wydobywać złoto i surowce!</p>
                 </div>
-                <button class="attack-btn" onclick="attackMonster()">⚔️ Atakuj</button>
-            </div>
-        </section>
+            </section>
 
-        <!-- PRAWY PANEL: Ekwipunek i Logi -->
-        <section class="panel inventory-panel">
-            <h2>Ekwipunek</h2>
-            <div class="inventory-grid" id="inventory-grid">
-                <!-- Tu będą wpadać itemy z gacha.js -->
-            </div>
-            
-            <h2 class="mt-20">Logi Walki</h2>
-            <div class="battle-log" id="battle-log">
-                <p>Witaj w grze!</p>
-            </div>
-        </section>
-    </main>
+            <!-- ZAKŁADKA 2: EKSPEDYCJE (WALKA I DPS) -->
+            <section id="tab-dungeon" class="tab-content">
+                <h2>Mroczne Rubieże (Poziom <span id="dungeon-level">1</span>)</h2>
+                <div class="combat-container">
+                    <div class="monster-card">
+                        <h3 id="monster-name">Ożywiony Truposz</h3>
+                        <div class="hp-bar">
+                            <div class="hp-fill" id="monster-hp" style="width: 100%;"></div>
+                        </div>
+                        <p class="hp-text"><span id="current-hp">100</span> / <span id="max-hp">100</span> HP</p>
+                    </div>
+                    <button class="attack-btn mt-20" onclick="playerAttack()">⚔️ Uderz!</button>
+                </div>
+                <div class="battle-log mt-20" id="battle-log"></div>
+            </section>
+
+            <!-- ZAKŁADKA 3: RULETKA / GACHA -->
+            <section id="tab-gacha" class="tab-content">
+                <h2>Ołtarz Losu</h2>
+                <div class="gacha-container text-center">
+                    <div class="egg" id="main-egg">🥚</div>
+                    <p>Wylosuj potężny ekwipunek!</p>
+                    <button class="gacha-btn mt-20" onclick="openEgg()">Otwórz Jajko (500 🪙)</button>
+                </div>
+            </section>
+
+            <!-- ZAKŁADKA 4: KUŹNIA I SKLEP -->
+            <section id="tab-shop" class="tab-content">
+                <h2>Kuźnia i Ulepszenia</h2>
+                <div class="shop-grid">
+                    <div class="shop-item">
+                        <h3>Lepszy Kilof</h3>
+                        <p>+2 Złota z kliknięcia</p>
+                        <button onclick="buyUpgrade('pickaxe')">Kup (Koszt: 100 🪙)</button>
+                    </div>
+                    <div class="shop-item">
+                        <h3>Najemnik</h3>
+                        <p>+5 DPS (Automatyczne ataki)</p>
+                        <button onclick="buyUpgrade('mercenary')">Kup (Koszt: 500 🪙)</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ZAKŁADKA 5: POSTAĆ (SLOTY NA ZBROJE I BROŃ) -->
+            <section id="tab-character" class="tab-content">
+                <h2>Twoja Postać</h2>
+                <div class="character-panel">
+                    <div class="equipped-gear">
+                        <div class="gear-slot" id="slot-head" title="Brak Hełmu">🪖</div>
+                        <div class="gear-slot" id="slot-armor" title="Brak Zbroi">👕</div>
+                        <div class="gear-slot" id="slot-weapon" title="Brak Broni">🗡️</div>
+                    </div>
+                    <div class="inventory-section mt-20">
+                        <h3>Plecak</h3>
+                        <div class="inventory-grid" id="inventory-grid">
+                            <!-- Tutaj wpadają wylosowane itemy -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
 
     <script src="js/core.js"></script>
     <script src="js/inventory.js"></script>
