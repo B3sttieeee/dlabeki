@@ -3,19 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>D&E: Hack'n'Slash Engine</title>
+    <title>D&E: Hack'n'Slash Engine V5</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <header class="nasa-nav">
-        <div class="nav-brand">D&E // TERMINAL</div>
+        <div class="nav-brand">D&E // TERMINAL V5</div>
         <div class="nav-tabs">
             <button class="tab-btn active" onclick="openTab('tab-mine')">⛏️ KOPALNIA</button>
             <button class="tab-btn" onclick="openTab('tab-combat')">🗺️ EKSPEDYCJE</button>
             <button class="tab-btn" onclick="openTab('tab-gacha')">🎰 RULETKA</button>
-            <button class="tab-btn" onclick="openTab('tab-inventory')">🎒 EKWIPUNEK I KUŹNIA</button>
+            <button class="tab-btn" onclick="openTab('tab-inventory')">🎒 EKWIPUNEK</button>
             <button class="tab-btn" onclick="openTab('tab-shop')">🛒 SKLEP</button>
             <button class="tab-btn" onclick="openTab('tab-skills')">🧠 SKILLE</button>
+            <button class="tab-btn" onclick="openTab('tab-quests')" style="color: var(--accent-gold);">📜 ZADANIA & PRESTIŻ</button>
         </div>
     </header>
 
@@ -29,15 +30,11 @@
             <div class="bar-container"><div id="player-hp-bar" class="bar-fill player-hp-fill"></div></div>
             <span><span id="player-current-hp">100</span>/<span id="player-max-hp">100</span></span>
         </div>
-        <div class="status-module">
-            <span>ENERGIA (KOPANIE):</span>
-            <div class="bar-container"><div id="stamina-bar" class="bar-fill stamina-fill"></div></div>
-            <span><span id="current-stamina">50</span>/<span id="max-stamina">50</span></span>
-        </div>
         <div class="status-module stats-mini">
             <span>🪙 <span id="gold-amount" class="text-gold">0</span></span>
             <span>🔩 ŻELAZO: <span id="iron-amount" class="text-dim">0</span></span>
             <span>💠 MITHRIL: <span id="mithril-amount" class="text-accent">0</span></span>
+            <span title="Mnożnik Prestiżu">🌟 <span id="prestige-amount" class="text-purple">0</span></span>
         </div>
     </div>
 
@@ -48,60 +45,51 @@
             <div class="center-module">
                 <h1 class="screen-title">SEKTOR WYDOBYWCZY</h1>
                 <div class="mine-interact" onclick="mineGold()">🪨</div>
-                <p class="sys-text">Wydobycie kosztuje energię (Odnowa: 1 pkt / sek). Szansa na rudy.</p>
+                <p class="sys-text">Klikaj, aby zdobywać Złoto. Szansa na wydobycie Żelaza i rzadkiego Mithrilu.</p>
             </div>
         </section>
 
-        <!-- [02] EKSPEDYCJE (Biomy i wstrzymywanie) -->
+        <!-- [02] EKSPEDYCJE -->
         <section id="tab-combat" class="screen split-screen">
             <div class="combat-arena">
                 <div class="biome-selector mb-20">
                     <label>BIEŻĄCY BIOM: </label>
                     <select id="biome-select" onchange="changeBiome()">
-                        <option value="0">Mroczny Las (Zalecane Lv 1-10)</option>
-                        <option value="1">Ruiny Starożytnych (Zalecane Lv 11-30)</option>
-                        <option value="2">Piekielne Otchłanie (Zalecane Lv 31+)</option>
+                        <option value="0">Mroczny Las (Lv 1-10)</option>
+                        <option value="1">Ruiny Starożytnych (Lv 11-30)</option>
+                        <option value="2">Piekielne Otchłanie (Lv 31+)</option>
                     </select>
                 </div>
                 
-                <h1 class="screen-title" id="dungeon-title">POZIOM <span id="dungeon-level">1</span></h1>
+                <h1 class="screen-title">POZIOM <span id="dungeon-level">1</span></h1>
                 
                 <div class="target-lock" id="arena-bg">
                     <h2 id="monster-name">CEL: Brak Danych</h2>
                     <div class="bar-container mb-10"><div id="monster-hp" class="bar-fill enemy-hp-fill"></div></div>
                     <div class="text-right mb-20">HP CELU: <span id="current-hp">0</span> / <span id="max-hp">0</span></div>
-                    <div id="boss-loot-indicator" class="text-accent text-center text-bold" style="display:none;">🎁 GWARANTOWANY DROP Z BOSSA! 🎁</div>
                 </div>
                 
                 <button class="engage-btn" id="attack-btn" onclick="playerAttack()">ZADAJ CIOS ⚔️</button>
-                <button class="engage-btn mt-10" id="resume-btn" onclick="resumeExpedition()" style="display:none; border-color:var(--accent-gold); color:var(--accent-gold);">WZNÓW EKSPEDYCJĘ (BIEŻĄCY POZIOM)</button>
+                <button class="engage-btn mt-10" id="resume-btn" onclick="resumeExpedition()" style="display:none; border-color:var(--accent-gold); color:var(--accent-gold);">WZNÓW EKSPEDYCJĘ</button>
             </div>
             <div class="telemetry-log">
-                <h3>// LOGI BOJOWE I DROPY</h3>
+                <h3>// TELEMETRIA WALKI</h3>
                 <div id="battle-log" class="log-output"></div>
             </div>
         </section>
 
-        <!-- [03] OŁTARZ (Ruletka CS:GO) -->
+        <!-- [03] OŁTARZ -->
         <section id="tab-gacha" class="screen">
-            <div class="center-module" style="width: 100%; max-width: 900px;">
+            <div class="center-module">
                 <h1 class="screen-title">GENERATOR ARTEFAKTÓW</h1>
-                
-                <div class="csgo-roulette-container">
-                    <div class="roulette-pointer"></div>
-                    <div class="roulette-strip" id="roulette-strip">
-                        <!-- Tu JS wygeneruje itemy -->
-                    </div>
-                </div>
-                
-                <button class="engage-btn mt-40" id="spin-btn" onclick="spinRoulette()">LOSUJ (KOSZT: 500 🪙)</button>
+                <div class="egg-interact" id="main-egg">🥚</div>
+                <button class="engage-btn mt-40" onclick="openEgg()">Pobierz Schemat (Koszt: 500 🪙)</button>
             </div>
         </section>
 
-        <!-- [04] EKWIPUNEK I KUŹNIA (KOWAL) -->
+        <!-- [04] EKWIPUNEK I KUŹNIA -->
         <section id="tab-inventory" class="screen">
             <div class="inventory-layout">
-                <!-- Lewa: Postać -->
                 <div class="character-loadout">
                     <h2 class="text-center mb-20">WYPOSAŻENIE</h2>
                     <div class="loadout-grid">
@@ -114,17 +102,15 @@
                     <div class="stats-panel mt-20" id="advanced-stats"></div>
                 </div>
                 
-                <!-- Środek: Magazyn -->
                 <div class="inventory-storage">
                     <h2 class="text-center mb-20">PLECAK</h2>
                     <div id="inventory-grid" class="storage-grid"></div>
                 </div>
 
-                <!-- Prawa: Kuźnia / Inspektor -->
                 <div class="forge-panel">
-                    <h2 class="text-center mb-20">KUŹNIA / SZCZEGÓŁY</h2>
+                    <h2 class="text-center mb-20">KUŹNIA</h2>
                     <div id="inspect-panel" class="text-center">
-                        <p class="text-dim">Wybierz przedmiot z plecaka lub wyposażenia, aby zobaczyć szczegóły i ulepszyć u Kowala.</p>
+                        <p class="text-dim">Wybierz przedmiot, aby ulepszyć (Wymaga Złota i Żelaza).</p>
                     </div>
                 </div>
             </div>
@@ -132,22 +118,22 @@
 
         <!-- [05] SKLEP -->
         <section id="tab-shop" class="screen">
-            <h1 class="screen-title text-center">RYNEK</h1>
+            <h1 class="screen-title text-center">RYNEK ZAAWANSOWANY</h1>
             <div class="shop-grid">
                 <div class="shop-card">
-                    <h3>Lepszy Kilof</h3>
+                    <h3>Wzmacniacz Kilofa</h3>
                     <p>Więcej złota i większa szansa na rudy.</p>
-                    <button class="buy-btn" onclick="buyUpgrade('pickaxe')">KUP (KOSZT: <span id="cost-pickaxe">100</span> 🪙)</button>
-                </div>
-                <div class="shop-card">
-                    <h3>Zastrzyk Energii</h3>
-                    <p>+10 Max Energii do kopania.</p>
-                    <button class="buy-btn" onclick="buyUpgrade('stamina')">KUP (KOSZT: <span id="cost-stamina">200</span> 🪙)</button>
+                    <button class="buy-btn" onclick="buyUpgrade('pickaxe')">KUP (<span id="cost-pickaxe">100</span> 🪙)</button>
                 </div>
                 <div class="shop-card">
                     <h3>Dron Bojowy</h3>
-                    <p>+15 DPS (Atak automatyczny).</p>
-                    <button class="buy-btn" onclick="buyUpgrade('mercenary')">KUP (KOSZT: <span id="cost-merc">500</span> 🪙)</button>
+                    <p>+15 DPS (Atakuje gdy patrzysz na Ekspedycję).</p>
+                    <button class="buy-btn" onclick="buyUpgrade('mercenary')">KUP (<span id="cost-merc">500</span> 🪙)</button>
+                </div>
+                <div class="shop-card">
+                    <h3>Leczenie</h3>
+                    <p>Odnawia 50% HP natychmiast.</p>
+                    <button class="buy-btn" onclick="buyUpgrade('heal')">KUP (200 🪙)</button>
                 </div>
             </div>
         </section>
@@ -155,12 +141,42 @@
         <!-- [06] SKILLE -->
         <section id="tab-skills" class="screen">
             <h1 class="screen-title text-center">DRZEWKO UMIEJĘTNOŚCI</h1>
-            <p class="text-center mb-20">Punkty: <span id="skill-points" class="text-accent text-bold" style="font-size: 1.5rem;">0</span></p>
+            <p class="text-center mb-20">Punkty Skilli: <span id="skill-points" class="text-accent text-bold" style="font-size: 1.5rem;">0</span></p>
             <div class="skill-tree">
                 <div class="skill-node"><h3>Witalność</h3><p>+20 Max HP</p><p>Lv: <span id="skill-lvl-hp">0</span>/50</p><button class="buy-btn" onclick="upgradeSkill('hp')">Ulepsz</button></div>
                 <div class="skill-node"><h3>Furia</h3><p>+10 DMG</p><p>Lv: <span id="skill-lvl-dmg">0</span>/50</p><button class="buy-btn" onclick="upgradeSkill('dmg')">Ulepsz</button></div>
                 <div class="skill-node"><h3>Wampiryzm</h3><p>+1% Lifesteal</p><p>Lv: <span id="skill-lvl-lifesteal">0</span>/20</p><button class="buy-btn" onclick="upgradeSkill('lifesteal')">Ulepsz</button></div>
                 <div class="skill-node"><h3>Precyzja</h3><p>+2% Kryt</p><p>Lv: <span id="skill-lvl-crit">0</span>/25</p><button class="buy-btn" onclick="upgradeSkill('crit')">Ulepsz</button></div>
+            </div>
+        </section>
+
+        <!-- [07] ZADANIA I PRESTIŻ -->
+        <section id="tab-quests" class="screen">
+            <div class="split-screen">
+                <div>
+                    <h1 class="screen-title">📜 AKTYWNE ZADANIA</h1>
+                    <div class="quest-card">
+                        <h3>Pogromca Bestii</h3>
+                        <p>Zabij potwory w ekspedycjach: <span id="q-kills">0</span> / 10</p>
+                        <button class="buy-btn" id="btn-q-kills" onclick="claimQuest('kills')">ODBIERZ (Nagroda: 1000 🪙)</button>
+                    </div>
+                    <div class="quest-card mt-20">
+                        <h3>Górnik Przodowy</h3>
+                        <p>Wykop w kopalni: <span id="q-mines">0</span> / 50 razy</p>
+                        <button class="buy-btn" id="btn-q-mines" onclick="claimQuest('mines')">ODBIERZ (Nagroda: 5 💠 Mithrilu)</button>
+                    </div>
+                </div>
+                
+                <div style="border-left: 1px solid var(--border-dim); padding-left: 40px;">
+                    <h1 class="screen-title text-purple">🌟 SYSTEM PRESTIŻU</h1>
+                    <p class="text-dim mb-20">Osiągnij Poziom 50, aby zresetować postęp (Złoto, Rudy, Levele, Skille). Zatrzymujesz Ekwipunek. W zamian otrzymujesz Token Prestiżu.</p>
+                    <div class="prestige-panel text-center" style="background: rgba(192, 132, 252, 0.1); padding: 30px; border: 1px solid var(--accent-purple);">
+                        <h2 class="text-purple">MNOŻNIK GLOBALNY</h2>
+                        <p class="mb-20 text-bold" style="font-size: 1.5rem;">+<span id="prestige-multiplier">0</span>% DO DMG, DPS I HP</p>
+                        <p class="mb-20">Posiadane Tokeny: <span id="prestige-tokens" class="text-purple text-bold">0</span></p>
+                        <button class="engage-btn" style="border-color: var(--accent-purple); color: var(--accent-purple);" onclick="doPrestige()">AKTYWUJ PRESTIŻ (WYMAGA 50 LVL)</button>
+                    </div>
+                </div>
             </div>
         </section>
 
