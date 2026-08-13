@@ -10,60 +10,74 @@ window.gameData = {
     highestDungeon: 1
 };
 
-// Nawigacja
+// Nawigacja SPA (Single Page Application)
 function openTab(tabId) {
-    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    // Ukryj wszystkie ekrany robocze
+    document.querySelectorAll('.screen').forEach(screen => {
+        screen.classList.remove('active');
+    });
+    
+    // Zresetuj wygląd przycisków w nawigacji
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Aktywuj wybrany ekran i przycisk
     document.getElementById(tabId).classList.add('active');
     event.currentTarget.classList.add('active');
 }
 
-// Zapis i wczytywanie
 function saveGame() {
-    localStorage.setItem('dlabeki_save', JSON.stringify(window.gameData));
-    saveInventory(); // Z inventory.js
+    localStorage.setItem('nasa_save', JSON.stringify(window.gameData));
+    if(typeof saveInventory === 'function') saveInventory();
 }
 
 function loadGame() {
-    const saved = localStorage.getItem('dlabeki_save');
-    if (saved) {
-        window.gameData = { ...window.gameData, ...JSON.parse(saved) };
-    }
+    const saved = localStorage.getItem('nasa_save');
+    if (saved) window.gameData = { ...window.gameData, ...JSON.parse(saved) };
     updateStats();
+    updateShopUI();
 }
 
-// Kopalnia
 function mineGold() {
     const mined = window.gameData.clickPower + Math.floor(Math.random() * 3);
     window.gameData.gold += mined;
     updateStats();
     
     const rock = document.querySelector('.rock');
-    rock.style.transform = `scale(0.9) rotate(${Math.random() * 10 - 5}deg)`;
-    setTimeout(() => rock.style.transform = 'scale(1) rotate(0deg)', 100);
+    rock.style.transform = `scale(0.9) translateY(10px)`;
+    setTimeout(() => rock.style.transform = 'scale(1) translateY(0)', 80);
 }
 
-// Sklep (Ulepszenia za złoto)
 function buyUpgrade(type) {
+    let cost = 0;
     if (type === 'pickaxe') {
-        const cost = 100 * window.gameData.pickaxeLevel;
+        cost = 100 * window.gameData.pickaxeLevel;
         if (window.gameData.gold >= cost) {
             window.gameData.gold -= cost;
             window.gameData.clickPower += 3;
             window.gameData.pickaxeLevel++;
-            logMessage(`🆙 Kilof ulepszony! Moc kopania: ${window.gameData.clickPower}`);
-        } else logMessage("❌ Za mało złota na kilof.");
+            logMessage(`SYS: Ulepszono sprzęt wydobywczy (Poziom ${window.gameData.pickaxeLevel}).`);
+        }
     } else if (type === 'mercenary') {
-        const cost = 500 * (window.gameData.mercenaryLevel + 1);
+        cost = 500 * (window.gameData.mercenaryLevel + 1);
         if (window.gameData.gold >= cost) {
             window.gameData.gold -= cost;
             window.gameData.baseDps += 15;
             window.gameData.mercenaryLevel++;
-            logMessage(`🔥 Wynajęto najemnika! Bazowy DPS: ${window.gameData.baseDps}`);
-        } else logMessage("❌ Za mało złota na najemnika.");
+            logMessage(`SYS: Zainicjowano Drona Bojowego (Jednostka ${window.gameData.mercenaryLevel}).`);
+        }
     }
     updateStats();
-    recalculateTotalStats(); // Z inventory.js
+    updateShopUI();
+    if(typeof recalculateTotalStats === 'function') recalculateTotalStats();
+}
+
+function updateShopUI() {
+    const costPickaxe = document.getElementById('cost-pickaxe');
+    const costMerc = document.getElementById('cost-merc');
+    if(costPickaxe) costPickaxe.innerText = 100 * window.gameData.pickaxeLevel;
+    if(costMerc) costMerc.innerText = 500 * (window.gameData.mercenaryLevel + 1);
 }
 
 function logMessage(msg) {
@@ -73,19 +87,14 @@ function logMessage(msg) {
     logDiv.innerHTML = `${time} ${msg}<br>` + logDiv.innerHTML;
 }
 
-// Inicjalizacja
 window.onload = () => {
     loadGame();
     if(typeof loadInventory === 'function') loadInventory();
     if(typeof spawnMonster === 'function') spawnMonster();
-    
-    // Auto-Zapis
-    setInterval(saveGame, 10000);
-    
-    // Pętla DPS (Auto-atak)
+    setInterval(saveGame, 5000); // Zapis co 5s
     setInterval(() => {
         if(window.totalDps > 0 && typeof autoAttack === 'function') {
             autoAttack(window.totalDps);
         }
-    }, 1000); // Równiutko co sekundę
+    }, 1000);
 };
