@@ -24,7 +24,7 @@ body {
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    zoom: 1; /* Kontrolowane przez JS */
+    zoom: 1; 
 }
 
 /* POMOCNICZE */
@@ -41,26 +41,28 @@ body {
 /* NAWIGACJA */
 .nasa-nav { display: flex; justify-content: space-between; align-items: center; background: var(--bg-surface); border-bottom: 1px solid var(--border-dim); padding: 0 20px; height: 60px; flex-shrink: 0; }
 .nav-brand { font-size: 1.5rem; color: var(--accent-blue); letter-spacing: 2px; }
-.nav-tabs { display: flex; height: 100%; }
-.tab-btn { background: transparent; border: none; color: var(--text-dim); font-family: inherit; font-size: 1rem; padding: 0 15px; cursor: pointer; height: 100%; border-bottom: 3px solid transparent; transition: all 0.2s; }
+.nav-tabs { display: flex; height: 100%; overflow-x: auto; scrollbar-width: none; }
+.nav-tabs::-webkit-scrollbar { display: none; }
+.tab-btn { background: transparent; border: none; color: var(--text-dim); font-family: inherit; font-size: 1rem; padding: 0 15px; cursor: pointer; height: 100%; border-bottom: 3px solid transparent; transition: all 0.2s; white-space: nowrap; }
 .tab-btn:hover { color: var(--text-bright); background: rgba(56, 189, 248, 0.05); }
 .tab-btn.active { color: var(--accent-blue); border-bottom: 3px solid var(--accent-blue); background: rgba(56, 189, 248, 0.1); }
 
 /* GLOBAL STATUS BAR */
-.global-status-bar { display: flex; gap: 30px; padding: 15px 30px; background: #000; border-bottom: 1px solid var(--border-dim); font-size: 1.1rem; flex-shrink: 0; align-items: center; }
-.status-module { display: flex; align-items: center; gap: 15px; flex-grow: 1; }
+.global-status-bar { display: flex; gap: 30px; padding: 15px 30px; background: #000; border-bottom: 1px solid var(--border-dim); font-size: 1.1rem; flex-shrink: 0; align-items: center; flex-wrap: wrap; }
+.status-module { display: flex; align-items: center; gap: 15px; flex-grow: 1; white-space: nowrap; }
 .stats-mini { justify-content: flex-end; font-weight: bold; }
-.bar-container { flex-grow: 1; height: 20px; background: #111; border: 1px solid var(--border-dim); position: relative; }
+.bar-container { flex-grow: 1; height: 20px; background: #111; border: 1px solid var(--border-dim); position: relative; min-width: 100px; }
 .bar-fill { height: 100%; width: 0%; transition: width 0.2s linear; }
 .exp-fill { background: var(--accent-blue); }
 .player-hp-fill { background: var(--accent-green); }
 .enemy-hp-fill { background: var(--accent-red); }
 
-/* PRZESTRZEŃ ROBOCZA */
+/* PRZESTRZEŃ ROBOCZA - POPRAWIONE WYŚWIETLANIE */
 .workspace { flex-grow: 1; position: relative; overflow-y: auto; }
 .screen { display: none; width: 100%; min-height: 100%; padding: 40px; animation: bootUp 0.2s ease-out; }
 .screen.active { display: flex; flex-direction: column; }
-.screen.split-screen { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+.screen.active.split-screen { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+
 @keyframes bootUp { from { opacity: 0; } to { opacity: 1; } }
 .screen-title { font-size: 2rem; border-bottom: 1px solid var(--border-dim); padding-bottom: 10px; margin-bottom: 30px; text-transform: uppercase; letter-spacing: 2px; }
 
