@@ -1,136 +1,99 @@
-// js/combat.js
+const biomes = [
+    { name: "Mroczny Las", bg: "rgba(34, 139, 34, 0.05)", border: "#228B22", startLv: 1, mobNames: ["Zmutowany Wilk", "Ent Morderca", "Leśny Upiór"] },
+    { name: "Ruiny Starożytnych", bg: "rgba(100, 100, 100, 0.05)", border: "#aaaaaa", startLv: 11, mobNames: ["Kamienny Golem", "Starożytny Strażnik", "Zmechanizowany Rycerz"] },
+    { name: "Piekielne Otchłanie", bg: "rgba(255, 69, 0, 0.05)", border: "#FF4500", startLv: 31, mobNames: ["Demon Ognia", "Pożeracz Dusz", "Piekielny Ogar"] }
+];
 
-const enemyNames = ["Cyber-Zwiadowca", "Zainfekowany Mechanik", "Strażnik Rdzenia", "Opancerzony Behemot", "Wirujący Koszmar"];
-let enemyHp = 100;
-let enemyMaxHp = 100;
-let enemyDmg = 10;
-let dungeonLevel = 1;
-let enemyAttackTimer = 0;
+let currentBiomeIdx = 0;
+window.combatData = { dungeonLevels: [1, 1, 1] }; // Poziom dla każdego biomu
+
+let enemyHp = 100; let enemyMaxHp = 100; let enemyDmg = 10; let enemyAttackTimer = 0;
+
+function changeBiome() {
+    currentBiomeIdx = parseInt(document.getElementById('biome-select').value);
+    const b = biomes[currentBiomeIdx];
+    document.getElementById('arena-bg').style.background = b.bg;
+    document.getElementById('arena-bg').style.borderColor = b.border;
+    spawnMonster();
+}
+
+function saveCombat() { localStorage.setItem('de_combat_v3', JSON.stringify(window.combatData)); }
+function loadCombat() { const s = localStorage.getItem('de_combat_v3'); if(s) window.combatData = JSON.parse(s); changeBiome(); }
 
 function spawnMonster() {
-    dungeonLevel = window.gameData.highestDungeon;
+    const b = biomes[currentBiomeIdx];
+    const dLv = window.combatData.dungeonLevels[currentBiomeIdx];
     
-    // Skalowanie na GRIND (Mnożnik x1.15 na poziom, rośnie do absurdalnych wartości z czasem)
-    const scaleFactor = Math.pow(1.15, dungeonLevel - 1);
+    const trueLevel = b.startLv + dLv - 1;
+    const scale = Math.pow(1.15, trueLevel - 1);
     
-    enemyMaxHp = Math.floor(100 * scaleFactor);
-    enemyHp = enemyMaxHp;
-    
-    // Wróg bije coraz mocniej
-    enemyDmg = Math.floor(8 * scaleFactor);
+    enemyMaxHp = Math.floor(100 * scale); enemyHp = enemyMaxHp;
+    enemyDmg = Math.floor(8 * scale);
 
-    const randomName = enemyNames[(dungeonLevel - 1) % enemyNames.length];
-    const isBoss = dungeonLevel % 10 === 0;
+    const isBoss = dLv % 10 === 0;
+    if (isBoss) { enemyMaxHp *= 3; enemyHp = enemyMaxHp; enemyDmg *= 1.5; }
+
+    document.getElementById('dungeon-level').innerText = dLv;
+    document.getElementById('monster-name').innerText = isBoss ? `☠️ BOSS: ${b.mobNames[dLv % b.mobNames.length]} ☠️` : b.mobNames[dLv % b.mobNames.length];
+    document.getElementById('monster-name').style.color = isBoss ? '#ef4444' : b.border;
     
-    if (isBoss) {
-        enemyMaxHp *= 3; 
-        enemyHp = enemyMaxHp;
-        enemyDmg *= 1.5;
-    }
-
-    const displayLevel = isBoss ? `BOSS LVL.${dungeonLevel}` : `LVL.${dungeonLevel}`;
-    const displayName = isBoss ? `☠️ ${randomName} ☠️` : randomName;
-
-    document.getElementById('dungeon-level').innerText = displayLevel;
-    document.getElementById('monster-name').innerText = displayName;
-    document.getElementById('monster-name').style.color = isBoss ? '#ef4444' : '#fbbf24';
+    // Szansa na gwarantowany drop bossa (Floor 10, 50, 100)
+    document.getElementById('boss-loot-indicator').style.display = (dLv === 10 || dLv === 50 || dLv === 100) ? 'block' : 'none';
     
     updateEnemyHpUI();
 }
 
-function playerAttack() {
-    if(window.isDead) return;
-    dealDamageToEnemy(window.totalDmg, true);
-}
-
-function autoAttack(dps) {
-    if (enemyHp > 0 && !window.isDead) dealDamageToEnemy(dps, false);
-}
-
-// WRÓG ATAKUJE
+function playerAttack() { if(window.isDead || !window.isFighting) return; dealDamageToEnemy(window.totalDmg, true); }
+function autoAttack(dps) { if (enemyHp > 0 && window.isFighting) dealDamageToEnemy(dps, false); }
 function enemyAttack() {
     enemyAttackTimer++;
-    // Wróg bije co 2 sekundy (2 "tyki" interwału z core.js)
     if (enemyAttackTimer >= 2 && enemyHp > 0) {
         enemyAttackTimer = 0;
-        
-        // Wahadło obrażeń wroga +/- 15%
-        let finalHit = Math.floor(enemyDmg * (0.85 + Math.random() * 0.3));
-        if (finalHit < 1) finalHit = 1;
-        
-        damagePlayer(finalHit);
-        
-        // Wizualny efekt na ekranie gdy obrywasz
-        if(!window.isDead) {
-            document.body.style.boxShadow = "inset 0 0 50px rgba(239, 68, 68, 0.4)";
-            setTimeout(() => document.body.style.boxShadow = "none", 150);
-        }
+        let hit = Math.floor(enemyDmg * (0.85 + Math.random() * 0.3));
+        damagePlayer(Math.max(1, hit));
+        if(window.isFighting) { document.body.style.boxShadow = "inset 0 0 50px rgba(239, 68, 68, 0.4)"; setTimeout(() => document.body.style.boxShadow = "none", 150); }
     }
 }
 
-function dealDamageToEnemy(amount, isManualClick) {
+function dealDamageToEnemy(amount, isClick) {
     if (enemyHp <= 0) return; 
-
-    let finalDmg = amount;
-    let isCrit = false;
+    let fDmg = amount; let crit = false;
     
-    if (isManualClick && Math.random() < (window.totalCrit / 100)) {
-        finalDmg = Math.floor(finalDmg * 2.5); // Krytyk to x2.5 DMG!
-        isCrit = true;
-    }
-
-    enemyHp -= finalDmg;
+    if (isClick && Math.random() < (window.totalCrit / 100)) { fDmg = Math.floor(fDmg * 2.5); crit = true; }
+    enemyHp -= fDmg;
     
-    // LIFESTEAL (Leczenie gracza)
-    if (window.totalLifesteal > 0 && isManualClick) {
-        let healAmount = finalDmg * (window.totalLifesteal / 100);
-        healPlayer(healAmount);
-    }
+    if (window.totalLifesteal > 0 && isClick) healPlayer(fDmg * (window.totalLifesteal / 100));
+    
+    if (isClick) logMessage(crit ? `<span class="text-purple">💥 KRYTYK! ${fDmg} DMG!</span>` : `Atak: ${fDmg} DMG.`);
 
-    if (isManualClick) {
-        const msg = isCrit ? `<span class="text-purple text-bold">💥 KRYTYK! Zadasz ${finalDmg} DMG!</span>` : `Zadajesz ${finalDmg} DMG.`;
-        logMessage(msg);
-    }
-
-    if (enemyHp <= 0) {
-        enemyHp = 0;
-        updateEnemyHpUI();
-        defeatMonster();
-    } else {
-        updateEnemyHpUI();
-        if (isManualClick) playHitAnimation();
-    }
+    if (enemyHp <= 0) { enemyHp = 0; defeatMonster(); }
+    updateEnemyHpUI();
 }
 
 function updateEnemyHpUI() {
-    const percent = Math.max(0, (enemyHp / enemyMaxHp) * 100);
-    document.getElementById('monster-hp').style.width = percent + '%';
+    const p = Math.max(0, (enemyHp / enemyMaxHp) * 100);
+    document.getElementById('monster-hp').style.width = p + '%';
     document.getElementById('current-hp').innerText = Math.floor(enemyHp);
     document.getElementById('max-hp').innerText = Math.floor(enemyMaxHp);
 }
 
-function playHitAnimation() {
-    const card = document.querySelector('.target-lock');
-    card.style.transform = `translate(${Math.random() * 10 - 5}px, ${Math.random() * 10 - 5}px)`;
-    setTimeout(() => card.style.transform = 'translate(0, 0)', 50);
-}
-
 function defeatMonster() {
-    // EXP
-    const expGain = Math.floor(20 * Math.pow(1.2, dungeonLevel - 1));
-    gainExp(expGain);
-
-    // ZŁOTO
-    const reward = Math.floor((Math.random() * 20 + 30) * Math.pow(1.2, dungeonLevel - 1));
-    window.gameData.gold += reward;
-    updateStatsUI();
+    const dLv = window.combatData.dungeonLevels[currentBiomeIdx];
+    const trueLevel = biomes[currentBiomeIdx].startLv + dLv - 1;
     
-    logMessage(`🏆 Cel Zniszczony! Zdobywasz <span class="text-gold">${reward} 🪙</span> oraz ${expGain} EXP.`);
+    const exp = Math.floor(20 * Math.pow(1.2, trueLevel - 1)); gainExp(exp);
+    const gold = Math.floor((Math.random() * 20 + 30) * Math.pow(1.2, trueLevel - 1)); window.gameData.gold += gold;
     
-    window.gameData.highestDungeon++;
-    saveGame(); 
+    logMessage(`🏆 Pokonano wroga! Złoto: +${gold}, EXP: +${exp}`);
+    
+    // Specjalny boss drop
+    if(dLv === 10 || dLv === 50 || dLv === 100) {
+        logMessage("<span class='text-gold text-bold'>🎁 OTRZYMANO ARTEFAKT Z BOSSA!</span>");
+        // Tu wymuszamy drop z gacha.js symulując otworzenie jajka za darmo
+        if(typeof rollItem === 'function') rollItem();
+    }
 
-    setTimeout(() => {
-        spawnMonster();
-    }, 1000);
+    window.combatData.dungeonLevels[currentBiomeIdx]++;
+    saveCombat(); updateStatusUI();
+    setTimeout(() => { if(window.isFighting) spawnMonster(); }, 800);
 }
