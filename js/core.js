@@ -245,9 +245,17 @@ window.onload = () => {
     if(typeof spawnMonster === 'function') spawnMonster();
     
     setInterval(saveGame, 5000); 
+    
+    // Główna pętla gry (odpala się co 1 sekundę)
     setInterval(() => {
-        if(!window.isDead) {
+        // Sprawdzamy, czy gracz ma otwartą zakładkę "Ekspedycje"
+        const combatTab = document.getElementById('tab-combat');
+        const isFighting = combatTab && combatTab.classList.contains('active');
+
+        if(!window.isDead && isFighting) {
+            // Ty bijesz potwora z automatu (Dron Bojowy)
             if(window.totalDps > 0 && typeof autoAttack === 'function') autoAttack(window.totalDps);
+            // Potwór oddaje Ci ciosy
             if(typeof enemyAttack === 'function') enemyAttack(); 
         }
     }, 1000);
