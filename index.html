@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dungeons & Eggs</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="topbar">
+        <h1>Dungeons & Eggs</h1>
+        <div class="stats">
+            <span class="gold">🪙 Złoto: <span id="gold-amount">0</span></span>
+            <span class="dmg">⚔️ DMG: <span id="player-dmg">10</span></span>
+        </div>
+    </header>
+
+    <main class="game-container">
+        <!-- LEWY PANEL: Kopalnia -->
+        <section class="panel mine-panel">
+            <h2>Kopalnia</h2>
+            <div class="mine-area" onclick="mineGold()">
+                <div class="rock">🪨</div>
+                <p>Klikaj, aby kopać!</p>
+            </div>
+            <div class="upgrades">
+                <button onclick="upgradePickaxe()">Ulepsz kilof (Koszt: 100 🪙)</button>
+            </div>
+        </section>
+
+        <!-- ŚRODKOWY PANEL: Akcja (Gacha i Walka) -->
+        <section class="panel action-panel">
+            <h2>Ołtarz Losu</h2>
+            <div class="gacha-area">
+                <div class="egg" id="main-egg" onclick="openEgg()">🥚</div>
+                <button class="gacha-btn" onclick="openEgg()">Otwórz Jajko (500 🪙)</button>
+            </div>
+            
+            <div class="combat-area mt-20">
+                <h2>Ekspedycja: Dungeony</h2>
+                <div class="monster-card">
+                    <h3>Goblin Zwiadowca</h3>
+                    <div class="hp-bar"><div class="hp-fill" id="monster-hp" style="width: 100%;"></div></div>
+                </div>
+                <button class="attack-btn" onclick="attackMonster()">⚔️ Atakuj</button>
+            </div>
+        </section>
+
+        <!-- PRAWY PANEL: Ekwipunek i Logi -->
+        <section class="panel inventory-panel">
+            <h2>Ekwipunek</h2>
+            <div class="inventory-grid" id="inventory-grid">
+                <!-- Tu będą wpadać itemy z gacha.js -->
+            </div>
+            
+            <h2 class="mt-20">Logi Walki</h2>
+            <div class="battle-log" id="battle-log">
+                <p>Witaj w grze!</p>
+            </div>
+        </section>
+    </main>
+
+    <script src="js/core.js"></script>
+    <script src="js/inventory.js"></script>
+    <script src="js/gacha.js"></script>
+    <script src="js/combat.js"></script>
+</body>
+</html>
