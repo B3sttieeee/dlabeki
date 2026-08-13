@@ -1,113 +1,148 @@
 @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap');
 
+:root {
+    --bg-dark: #0a0a0c;
+    --bg-panel: #121418;
+    --border-color: #1f2833;
+    --neon-blue: #66fcf1;
+    --neon-green: #45a29e;
+    --text-main: #c5c6c7;
+    --text-highlight: #ffffff;
+    --gold: #ffd700;
+    --hp-red: #ff3333;
+}
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
     font-family: 'Rajdhani', sans-serif;
-    background-color: #0b0c10;
-    color: #c5c6c7;
+    background-color: var(--bg-dark);
+    color: var(--text-main);
     height: 100vh;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 }
 
 /* TOPBAR */
 .topbar {
-    background: #1f2833;
+    background: #0d0f12;
     padding: 15px 30px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 2px solid #66fcf1;
-    box-shadow: 0 0 15px rgba(102, 252, 241, 0.2);
+    border-bottom: 2px solid var(--neon-blue);
+    box-shadow: 0 0 20px rgba(102, 252, 241, 0.15);
+    z-index: 10;
 }
-.stats span { margin-left: 20px; font-size: 1.2rem; font-weight: bold; }
-.gold { color: #ffd700; }
+.logo { font-size: 1.5rem; font-weight: bold; color: var(--neon-blue); letter-spacing: 2px; }
+.stats { display: flex; gap: 30px; }
+.stats span { font-size: 1.2rem; font-weight: bold; padding: 5px 15px; background: rgba(255,255,255,0.05); border-radius: 5px; border: 1px solid #222; }
+.gold { color: var(--gold); }
 .dmg { color: #ff5722; }
+.dps { color: #b388ff; }
 
-/* LAYOUT GRY */
-.game-container {
-    display: grid;
-    grid-template-columns: 1fr 1.5fr 1fr;
-    gap: 20px;
-    padding: 20px;
-    flex-grow: 1;
-}
+/* LAYOUT */
+.main-layout { display: flex; flex-grow: 1; height: calc(100vh - 60px); }
 
-.panel {
-    background: #121418;
-    border: 1px solid #1f2833;
-    border-radius: 10px;
-    padding: 20px;
+/* SIDEBAR */
+.sidebar {
+    width: 260px;
+    background: var(--bg-panel);
+    border-right: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    padding: 20px 0;
+}
+.tab-btn {
+    background: transparent; color: var(--text-main); border: none;
+    border-left: 4px solid transparent; text-align: left;
+    padding: 18px 25px; margin-bottom: 5px; font-size: 1.2rem;
+    cursor: pointer; transition: all 0.2s ease;
+    text-transform: uppercase; letter-spacing: 1px;
+}
+.tab-btn:hover { background: rgba(102, 252, 241, 0.05); color: var(--text-highlight); }
+.tab-btn.active {
+    background: rgba(102, 252, 241, 0.1); color: var(--neon-blue);
+    border-left: 4px solid var(--neon-blue); font-weight: bold;
+    box-shadow: inset 20px 0 20px -20px var(--neon-blue);
 }
 
-h2 { border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 15px; text-align: center; color: #45a29e; }
+/* CONTENT AREA */
+.content-area { flex-grow: 1; padding: 40px; overflow-y: auto; position: relative; }
+.tab-content { display: none; animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+.tab-content.active { display: block; }
+@keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+h2 { font-size: 2rem; color: var(--text-highlight); border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 30px; }
 .mt-20 { margin-top: 20px; }
+.text-center { text-align: center; }
+
+/* PRZYCISKI GLOBALNE */
+button.action-btn {
+    background: transparent; color: var(--neon-blue); border: 2px solid var(--neon-blue);
+    padding: 15px 30px; font-size: 1.2rem; font-family: inherit; font-weight: bold;
+    border-radius: 4px; cursor: pointer; transition: all 0.3s;
+    text-transform: uppercase; letter-spacing: 1px;
+}
+button.action-btn:hover { background: var(--neon-blue); color: #000; box-shadow: 0 0 15px var(--neon-blue); }
 
 /* KOPALNIA */
-.mine-area {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    user-select: none;
-    transition: transform 0.1s;
+.mine-container {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    height: 400px; background: #0f1115; border: 1px solid #222; border-radius: 10px; cursor: pointer; transition: transform 0.1s;
 }
-.mine-area:active { transform: scale(0.95); }
-.rock { font-size: 5rem; text-shadow: 0 10px 10px rgba(0,0,0,0.5); }
+.mine-container:active { transform: scale(0.98); }
+.rock { font-size: 8rem; filter: drop-shadow(0 0 20px rgba(0,0,0,0.8)); transition: transform 0.1s; }
 
-/* GACHA - JAJKA */
-.gacha-area { text-align: center; }
-.egg { font-size: 6rem; cursor: pointer; transition: transform 0.2s; margin-bottom: 15px; }
-.egg:hover { transform: scale(1.05) rotate(5deg); }
-.shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+/* WALKA */
+.combat-container { background: #0f1115; padding: 30px; border-radius: 10px; border: 1px solid #222; text-align: center; }
+.monster-card { margin-bottom: 20px; }
+.monster-card h3 { font-size: 1.8rem; color: #ff5722; margin-bottom: 15px; }
+.hp-bar { width: 100%; height: 25px; background: #222; border-radius: 4px; border: 1px solid #444; overflow: hidden; position: relative; }
+.hp-fill { height: 100%; background: linear-gradient(90deg, #aa0000, var(--hp-red)); transition: width 0.2s ease-out; }
+.hp-text { margin-top: 10px; font-weight: bold; font-size: 1.2rem; }
+button.attack-btn { border-color: #ff5722; color: #ff5722; width: 100%; font-size: 1.5rem; padding: 20px; }
+button.attack-btn:hover { background: #ff5722; color: #fff; box-shadow: 0 0 20px #ff5722; }
 
-@keyframes shake {
-    10%, 90% { transform: translate3d(-2px, 0, 0) rotate(-5deg); }
-    20%, 80% { transform: translate3d(4px, 0, 0) rotate(5deg); }
-    30%, 50%, 70% { transform: translate3d(-8px, 0, 0) rotate(-10deg); }
-    40%, 60% { transform: translate3d(8px, 0, 0) rotate(10deg); }
+/* GACHA */
+.gacha-container { background: #0f1115; padding: 50px; border-radius: 10px; border: 1px solid #222; }
+.egg { font-size: 8rem; display: inline-block; cursor: pointer; transition: transform 0.2s; filter: drop-shadow(0 0 30px rgba(163,53,238,0.3)); }
+.egg:hover { transform: scale(1.1); }
+.shake { animation: shakeEgg 0.5s ease-in-out infinite; }
+@keyframes shakeEgg { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-15deg); } 75% { transform: rotate(15deg); } }
+
+/* POSTAĆ I EKWIPUNEK */
+.character-panel { display: grid; grid-template-columns: 1fr 2fr; gap: 40px; }
+.equipped-gear { display: flex; flex-direction: column; gap: 15px; background: #0f1115; padding: 20px; border-radius: 10px; border: 1px solid #222; }
+.gear-slot-container { display: flex; align-items: center; gap: 15px; }
+.gear-label { width: 60px; color: #888; font-weight: bold; text-transform: uppercase; font-size: 0.9rem; }
+.gear-slot {
+    width: 70px; height: 70px; background: #15181e; border: 2px dashed #444;
+    border-radius: 8px; display: flex; justify-content: center; align-items: center;
+    font-size: 2rem; cursor: pointer; transition: 0.2s; position: relative;
 }
 
-/* PRZYCISKI */
-button {
-    background: #1f2833; color: #66fcf1; border: 1px solid #66fcf1;
-    padding: 12px; font-size: 1.1rem; font-family: inherit; font-weight: bold;
-    border-radius: 5px; cursor: pointer; transition: all 0.2s; text-transform: uppercase;
-    width: 100%;
+.inventory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 10px; background: #0f1115; padding: 20px; border-radius: 10px; border: 1px solid #222; min-height: 300px; align-content: start; }
+.item-card {
+    aspect-ratio: 1; background: #1a1f26; border: 2px solid #333;
+    border-radius: 6px; display: flex; justify-content: center; align-items: center;
+    font-size: 2rem; cursor: pointer; transition: transform 0.1s, box-shadow 0.2s; position: relative;
 }
-button:hover { background: #66fcf1; color: #0b0c10; box-shadow: 0 0 10px #66fcf1; }
-.attack-btn { border-color: #ff5722; color: #ff5722; }
-.attack-btn:hover { background: #ff5722; color: #fff; box-shadow: 0 0 10px #ff5722; }
+.item-card:hover { transform: translateY(-3px); z-index: 10; }
 
-/* EKWIPUNEK I LOGI */
-.inventory-grid {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
-}
-.item-slot {
-    aspect-ratio: 1; background: #1a1f26; border: 1px solid #333;
-    display: flex; justify-content: center; align-items: center; font-size: 1.5rem;
-    border-radius: 5px; position: relative; cursor: help;
-}
+/* RARITY COLORS - GEOMETRIC/PRYZMAT VIBE */
+.tier-common { border-color: #6c757d; box-shadow: inset 0 0 10px rgba(108,117,125,0.2); }
+.tier-rare { border-color: #00a8ff; box-shadow: inset 0 0 15px rgba(0,168,255,0.3); }
+.tier-epic { border-color: #9c88ff; box-shadow: inset 0 0 15px rgba(156,136,255,0.4); }
+.tier-legendary { border-color: #fbc531; box-shadow: inset 0 0 20px rgba(251,197,49,0.5); }
+.tier-mythic { border-color: #e84118; box-shadow: 0 0 15px #e84118, inset 0 0 20px rgba(232,65,24,0.6); }
+
+/* BATTLE LOG */
 .battle-log {
-    background: #000; padding: 10px; border-radius: 5px;
-    height: 150px; overflow-y: auto; font-family: monospace; font-size: 0.9rem;
+    background: #0a0a0c; padding: 15px; border-radius: 8px; border: 1px solid #1f2833;
+    height: 200px; overflow-y: auto; font-family: monospace; font-size: 0.95rem; line-height: 1.5;
 }
-
-/* KOLORY RZADKOŚCI (RARITY TIER) */
-.tier-common { border-color: #a0a0a0 !important; box-shadow: inset 0 0 10px rgba(160,160,160,0.2); }
-.tier-rare { border-color: #0070dd !important; box-shadow: inset 0 0 10px rgba(0,112,221,0.4); }
-.tier-epic { border-color: #a335ee !important; box-shadow: inset 0 0 10px rgba(163,53,238,0.4); }
-.tier-legendary { border-color: #ff8000 !important; box-shadow: inset 0 0 15px rgba(255,128,0,0.6); }
-.tier-mythic { border-color: #ff0000 !important; box-shadow: inset 0 0 20px rgba(255,0,0,0.8); animation: pulse-red 2s infinite; }
-
-@keyframes pulse-red {
-    0% { box-shadow: 0 0 10px #ff0000; }
-    50% { box-shadow: 0 0 20px #ff0000, inset 0 0 15px #ff0000; }
-    100% { box-shadow: 0 0 10px #ff0000; }
-}
+.log-time { color: #555; margin-right: 10px; }
+.log-dmg { color: #ff5722; font-weight: bold; }
+.log-gold { color: #ffd700; font-weight: bold; }
