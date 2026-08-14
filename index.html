@@ -10,15 +10,26 @@
 
     <meta
         name="theme-color"
-        content="#05070a"
+        content="#0b0f18"
     >
 
-    <meta
-        name="description"
-        content="D&E Hack'n'Slash Engine — RPG Clicker"
+    <title>Pixel Realms Online</title>
+
+    <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com"
     >
 
-    <title>D&E // TERMINAL V6</title>
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap"
+        rel="stylesheet"
+    >
 
     <link
         rel="stylesheet"
@@ -28,1550 +39,1319 @@
 
 <body>
 
+<div id="app">
+
     <!-- =====================================================
-         MAIN NAVIGATION
+         TOP HUD
          ===================================================== -->
 
-    <header class="nasa-nav">
+    <header class="topbar">
 
-        <div class="nav-brand">
-            D&E // TERMINAL V6
+        <div class="brand">
+            <div class="brand-icon">⚔</div>
+
+            <div>
+                <div class="brand-title">
+                    PIXEL REALMS
+                </div>
+
+                <div class="brand-subtitle">
+                    ONLINE RPG
+                </div>
+            </div>
         </div>
 
-        <nav
-            class="nav-tabs"
-            aria-label="Główna nawigacja"
-        >
 
-            <button
-                class="tab-btn active"
-                type="button"
-                data-tab="tab-mine"
-                onclick="openTab('tab-mine')"
-            >
-                ⛏️ KOPALNIA
-            </button>
+        <div class="top-resources">
 
-            <button
-                class="tab-btn"
-                type="button"
-                data-tab="tab-combat"
-                onclick="openTab('tab-combat')"
-            >
-                🗺️ EKSPEDYCJE
-            </button>
+            <div class="resource">
+                <span class="resource-icon gold">🪙</span>
+                <span id="gold-amount">0</span>
+            </div>
 
-            <button
-                class="tab-btn"
-                type="button"
-                data-tab="tab-gacha"
-                onclick="openTab('tab-gacha')"
-            >
-                🎰 RULETKA
-            </button>
+            <div class="resource">
+                <span class="resource-icon iron">🔩</span>
+                <span id="iron-amount">0</span>
+            </div>
 
-            <button
-                class="tab-btn"
-                type="button"
-                data-tab="tab-inventory"
-                onclick="openTab('tab-inventory')"
-            >
-                🎒 EKWIPUNEK
-            </button>
+            <div class="resource">
+                <span class="resource-icon crystal">💎</span>
+                <span id="mithril-amount">0</span>
+            </div>
 
-            <button
-                class="tab-btn"
-                type="button"
-                data-tab="tab-shop"
-                onclick="openTab('tab-shop')"
-            >
-                🛒 SKLEP
-            </button>
+            <div class="resource prestige-resource">
+                <span>✦</span>
+                <span id="prestige-amount">0</span>
+            </div>
 
-            <button
-                class="tab-btn"
-                type="button"
-                data-tab="tab-skills"
-                onclick="openTab('tab-skills')"
-            >
-                🧠 SKILLE
-            </button>
-
-            <button
-                class="tab-btn"
-                type="button"
-                data-tab="tab-quests"
-                onclick="openTab('tab-quests')"
-            >
-                📜 ZADANIA & PRESTIŻ
-            </button>
-
-        </nav>
+        </div>
 
     </header>
 
 
     <!-- =====================================================
-         GLOBAL PLAYER STATUS
+         MAIN LAYOUT
          ===================================================== -->
 
-    <section
-        class="global-status-bar"
-        aria-label="Statystyki gracza"
-    >
-
-        <!-- LEVEL / EXP -->
-
-        <div class="status-module">
-
-            <span class="status-label">
-                LVL:
-            </span>
-
-            <span
-                id="player-level"
-                class="text-accent text-bold"
-            >
-                1
-            </span>
-
-            <div
-                class="bar-container"
-                title="Doświadczenie"
-            >
-                <div
-                    id="exp-bar"
-                    class="bar-fill exp-fill"
-                    style="width: 0%;"
-                ></div>
-            </div>
-
-        </div>
-
-
-        <!-- PLAYER HP -->
-
-        <div class="status-module">
-
-            <span class="status-label">
-                HP:
-            </span>
-
-            <div
-                class="bar-container"
-                title="Punkty życia"
-            >
-                <div
-                    id="player-hp-bar"
-                    class="bar-fill player-hp-fill"
-                    style="width: 100%;"
-                ></div>
-            </div>
-
-            <span class="status-value">
-                <span
-                    id="player-current-hp"
-                    class="text-green"
-                >
-                    100
-                </span>
-
-                /
-
-                <span
-                    id="player-max-hp"
-                    class="text-green"
-                >
-                    100
-                </span>
-            </span>
-
-        </div>
-
-
-        <!-- RESOURCES -->
-
-        <div class="status-module stats-mini">
-
-            <span title="Złoto">
-                🪙
-                <span
-                    id="gold-amount"
-                    class="text-gold text-bold"
-                >
-                    0
-                </span>
-            </span>
-
-            <span title="Żelazo">
-                🔩
-                <span
-                    id="iron-amount"
-                    class="text-dim"
-                >
-                    0
-                </span>
-            </span>
-
-            <span title="Mithril">
-                💠
-                <span
-                    id="mithril-amount"
-                    class="text-accent"
-                >
-                    0
-                </span>
-            </span>
-
-            <span
-                title="Tokeny Prestiżu"
-            >
-                🌟
-                <span
-                    id="prestige-amount"
-                    class="text-purple"
-                >
-                    0
-                </span>
-            </span>
-
-        </div>
-
-    </section>
-
-
-    <!-- =====================================================
-         MAIN WORKSPACE
-         ===================================================== -->
-
-    <main
-        class="workspace"
-        id="game-workspace"
-    >
+    <div class="game-layout">
 
 
         <!-- =================================================
-             [01] KOPALNIA
+             LEFT SIDEBAR
              ================================================= -->
 
-        <section
-            id="tab-mine"
-            class="screen active"
-            aria-labelledby="mine-title"
-        >
+        <aside class="sidebar">
 
-            <div class="center-module">
+            <div class="character-card">
 
-                <h1
-                    id="mine-title"
-                    class="screen-title"
-                >
-                    SEKTOR WYDOBYWCZY
-                </h1>
-
-
-                <div
-                    class="mine-interact"
-                    id="mine-rock"
-                    role="button"
-                    tabindex="0"
-                    aria-label="Wydobądź surowce"
-                    onclick="mineGold()"
-                    onkeydown="if(event.key==='Enter' || event.key===' ') mineGold()"
-                >
-                    🪨
-                </div>
-
-
-                <p class="text-dim text-center">
-                    Klikaj skałę, aby zdobywać
-                    <span class="text-gold">
-                        Złoto
-                    </span>.
-                </p>
-
-                <p class="text-dim text-center mt-10">
-                    Istnieje szansa na wydobycie
-                    <span class="text-dim">
-                        Żelaza
-                    </span>
-                    oraz rzadkiego
-                    <span class="text-accent">
-                        Mithrilu
-                    </span>.
-                </p>
-
-
-                <div
-                    class="panel mt-20"
-                    style="width: min(100%, 600px);"
-                >
-
-                    <div class="panel-title">
-                        // STATUS KOPALNI
+                <div class="avatar-frame">
+                    <div class="avatar">
+                        🧙
                     </div>
-
-                    <div
-                        class="text-center"
-                        id="mine-status"
-                    >
-                        SYSTEM GOTOWY
-                    </div>
-
                 </div>
 
-            </div>
-
-        </section>
-
-
-        <!-- =================================================
-             [02] EKSPEDYCJE / COMBAT
-             ================================================= -->
-
-        <section
-            id="tab-combat"
-            class="screen split-screen"
-            aria-labelledby="combat-title"
-        >
-
-            <!-- COMBAT ARENA -->
-
-            <div class="combat-arena">
-
-                <!-- BIOME -->
-
-                <div class="biome-selector mb-20">
-
-                    <label
-                        for="biome-select"
-                        class="text-dim"
-                    >
-                        BIEŻĄCY BIOM:
-                    </label>
-
-                    <select
-                        id="biome-select"
-                        onchange="changeBiome()"
-                    >
-
-                        <option value="0">
-                            Mroczny Las — Lv 1-10
-                        </option>
-
-                        <option value="1">
-                            Ruiny Starożytnych — Lv 11-30
-                        </option>
-
-                        <option value="2">
-                            Piekielne Otchłanie — Lv 31+
-                        </option>
-
-                    </select>
-
+                <div class="character-name">
+                    Wędrowiec
                 </div>
 
-
-                <!-- DUNGEON LEVEL -->
-
-                <h1
-                    id="combat-title"
-                    class="screen-title"
-                >
-                    POZIOM
-                    <span
-                        id="dungeon-level"
-                        class="text-accent"
-                    >
+                <div class="character-level">
+                    LVL
+                    <span id="player-level">
                         1
                     </span>
-                </h1>
+                </div>
 
-
-                <!-- ENEMY -->
-
-                <div
-                    class="target-lock"
-                    id="arena-bg"
-                >
-
+                <div class="xp-bar">
                     <div
-                        class="badge badge-red mb-10"
-                    >
-                        ⚠ CEL NAMIERZONY
+                        id="exp-bar"
+                        class="xp-fill"
+                    ></div>
+                </div>
+
+                <div class="xp-text">
+                    <span id="player-exp">
+                        0
+                    </span>
+                    /
+                    <span id="player-max-exp">
+                        100
+                    </span>
+                    XP
+                </div>
+
+            </div>
+
+
+            <nav class="main-menu">
+
+                <button
+                    class="menu-btn active"
+                    data-screen="world"
+                    onclick="openTab('screen-world', this)"
+                >
+                    <span>🌍</span>
+                    ŚWIAT
+                </button>
+
+                <button
+                    class="menu-btn"
+                    data-screen="inventory"
+                    onclick="openTab('screen-inventory', this)"
+                >
+                    <span>🎒</span>
+                    EKWIPUNEK
+                </button>
+
+                <button
+                    class="menu-btn"
+                    data-screen="skills"
+                    onclick="openTab('screen-skills', this)"
+                >
+                    <span>✨</span>
+                    UMIEJĘTNOŚCI
+                </button>
+
+                <button
+                    class="menu-btn"
+                    data-screen="shop"
+                    onclick="openTab('screen-shop', this)"
+                >
+                    <span>🏪</span>
+                    SKLEP
+                </button>
+
+                <button
+                    class="menu-btn"
+                    data-screen="quests"
+                    onclick="openTab('screen-quests', this)"
+                >
+                    <span>📜</span>
+                    ZADANIA
+                </button>
+
+                <button
+                    class="menu-btn"
+                    data-screen="gacha"
+                    onclick="openTab('screen-gacha', this)"
+                >
+                    <span>🎲</span>
+                    SKRZYNIE
+                </button>
+
+            </nav>
+
+
+            <div class="sidebar-footer">
+
+                <div class="online-dot"></div>
+
+                SERVER ONLINE
+
+                <span class="server-ping">
+                    28ms
+                </span>
+
+            </div>
+
+        </aside>
+
+
+        <!-- =================================================
+             MAIN CONTENT
+             ================================================= -->
+
+        <main class="content">
+
+
+            <!-- =================================================
+                 WORLD
+                 ================================================= -->
+
+            <section
+                id="screen-world"
+                class="game-screen active"
+            >
+
+                <div class="page-header">
+
+                    <div>
+                        <div class="page-kicker">
+                            WORLD MAP
+                        </div>
+
+                        <h1>
+                            KRAINA PIXEL REALMS
+                        </h1>
                     </div>
 
+                    <div class="location-badge">
+                        📍
+                        <span id="current-biome-label">
+                            Mroczny Las
+                        </span>
+                    </div>
 
-                    <h2
-                        id="monster-name"
-                        class="mb-20"
-                    >
-                        CEL: BRAK DANYCH
-                    </h2>
+                </div>
 
 
-                    <div
-                        class="bar-container mb-10"
-                        style="height: 20px;"
-                    >
+                <div class="world-layout">
+
+
+                    <!-- MAP -->
+
+                    <div class="map-panel">
+
+                        <div class="map-header">
+
+                            <span>
+                                MAPA ŚWIATA
+                            </span>
+
+                            <span class="map-coords">
+                                X: 028
+                                Y: 014
+                            </span>
+
+                        </div>
+
 
                         <div
-                            id="monster-hp"
-                            class="bar-fill enemy-hp-fill"
-                            style="width: 0%;"
-                        ></div>
+                            id="world-map"
+                            class="pixel-map"
+                        >
+
+                            <div class="map-grid"></div>
+
+                            <div class="map-decoration tree tree-1">
+                                🌲
+                            </div>
+
+                            <div class="map-decoration tree tree-2">
+                                🌲
+                            </div>
+
+                            <div class="map-decoration tree tree-3">
+                                🌲
+                            </div>
+
+                            <div class="map-decoration rock rock-1">
+                                🪨
+                            </div>
+
+                            <div class="map-decoration rock rock-2">
+                                🪨
+                            </div>
+
+                            <div class="map-path"></div>
+
+
+                            <button
+                                class="map-node active"
+                                data-biome="0"
+                                onclick="selectBiomeFromMap(0)"
+                            >
+                                <span>🌲</span>
+                                <small>
+                                    MROCZNY LAS
+                                </small>
+                            </button>
+
+
+                            <button
+                                class="map-node"
+                                data-biome="1"
+                                onclick="selectBiomeFromMap(1)"
+                            >
+                                <span>🏛️</span>
+                                <small>
+                                    RUINY
+                                </small>
+                            </button>
+
+
+                            <button
+                                class="map-node locked"
+                                data-biome="2"
+                                onclick="selectBiomeFromMap(2)"
+                            >
+                                <span>🔥</span>
+                                <small>
+                                    OTCHŁAŃ
+                                </small>
+                            </button>
+
+
+                            <div class="player-marker">
+                                🧙
+                            </div>
+
+                        </div>
+
+
+                        <div class="map-legend">
+
+                            <span>
+                                <i class="legend-dot player"></i>
+                                GRACZ
+                            </span>
+
+                            <span>
+                                <i class="legend-dot zone"></i>
+                                ODKRYTY
+                            </span>
+
+                            <span>
+                                <i class="legend-dot locked"></i>
+                                ZABLOKOWANY
+                            </span>
+
+                        </div>
 
                     </div>
 
 
-                    <div class="text-right">
+                    <!-- COMBAT -->
 
-                        HP CELU:
+                    <div class="combat-panel">
 
-                        <span
-                            id="current-hp"
-                            class="text-red text-bold"
+                        <div class="combat-top">
+
+                            <div class="location-title">
+                                <span class="location-icon">
+                                    🌲
+                                </span>
+
+                                <div>
+                                    <div class="small-label">
+                                        AKTUALNA LOKACJA
+                                    </div>
+
+                                    <strong id="biome-name">
+                                        Mroczny Las
+                                    </strong>
+                                </div>
+                            </div>
+
+
+                            <select
+                                id="biome-select"
+                                onchange="changeBiome()"
+                                class="pixel-select"
+                            >
+
+                                <option value="0">
+                                    Mroczny Las
+                                </option>
+
+                                <option value="1">
+                                    Ruiny Starożytnych
+                                </option>
+
+                                <option value="2">
+                                    Piekielne Otchłanie
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- ENEMY CARD -->
+
+                        <div
+                            id="arena-bg"
+                            class="enemy-card"
                         >
-                            0
-                        </span>
 
-                        /
+                            <div class="enemy-top">
 
-                        <span
-                            id="max-hp"
-                            class="text-red text-bold"
-                        >
-                            0
-                        </span>
+                                <div>
+                                    <div class="small-label">
+                                        PRZECIWNIK
+                                    </div>
+
+                                    <h2 id="monster-name">
+                                        Zmutowany Wilk
+                                    </h2>
+                                </div>
+
+                                <div
+                                    id="dungeon-level"
+                                    class="enemy-level"
+                                >
+                                    LV 1
+                                </div>
+
+                            </div>
+
+
+                            <div class="enemy-sprite">
+                                🐺
+                            </div>
+
+
+                            <div class="enemy-hp-label">
+                                <span>
+                                    HP
+                                </span>
+
+                                <span>
+                                    <span id="current-hp">
+                                        100
+                                    </span>
+                                    /
+                                    <span id="max-hp">
+                                        100
+                                    </span>
+                                </span>
+                            </div>
+
+                            <div class="enemy-hp-bar">
+                                <div
+                                    id="monster-hp"
+                                    class="enemy-hp-fill"
+                                ></div>
+                            </div>
+
+
+                            <div
+                                id="combat-status"
+                                class="combat-status"
+                            >
+                                GOTOWY DO WALKI
+                            </div>
+
+                        </div>
+
+
+                        <!-- ACTIONS -->
+
+                        <div class="combat-actions">
+
+                            <button
+                                id="attack-btn"
+                                class="pixel-button danger"
+                                onclick="playerAttack()"
+                            >
+                                ⚔ ATAKUJ
+                            </button>
+
+                            <button
+                                id="resume-btn"
+                                class="pixel-button success hidden"
+                                onclick="resumeExpedition()"
+                            >
+                                ▶ WZNÓW
+                            </button>
+
+                        </div>
+
+
+                        <!-- AUTO EXPEDITION -->
+
+                        <div class="auto-panel">
+
+                            <div class="auto-header">
+
+                                <div>
+                                    <span class="auto-icon">
+                                        🤖
+                                    </span>
+
+                                    AUTO EKSPEDYCJA
+                                </div>
+
+                                <div
+                                    id="auto-status"
+                                    class="status-off"
+                                >
+                                    OFF
+                                </div>
+
+                            </div>
+
+
+                            <div class="auto-description">
+                                Automatycznie pokonuj kolejne
+                                poziomy, zbieraj EXP i loot.
+                            </div>
+
+
+                            <div class="auto-grid">
+
+                                <button
+                                    id="auto-toggle"
+                                    class="pixel-button secondary"
+                                    onclick="toggleAutoExpedition()"
+                                >
+                                    ▶ WŁĄCZ AUTO
+                                </button>
+
+                                <button
+                                    class="pixel-button secondary"
+                                    onclick="toggleAutoSkip()"
+                                >
+                                    ⏩ SKIP: OFF
+                                </button>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- COMBAT STATS -->
+
+                        <div class="combat-stats">
+
+                            <div>
+                                <span>
+                                    DMG
+                                </span>
+
+                                <strong
+                                    id="combat-dmg"
+                                >
+                                    10
+                                </strong>
+                            </div>
+
+                            <div>
+                                <span>
+                                    DPS
+                                </span>
+
+                                <strong
+                                    id="combat-dps"
+                                >
+                                    0
+                                </strong>
+                            </div>
+
+                            <div>
+                                <span>
+                                    KRYT
+                                </span>
+
+                                <strong
+                                    id="combat-crit"
+                                >
+                                    5%
+                                </strong>
+                            </div>
+
+                            <div>
+                                <span>
+                                    LIFESTEAL
+                                </span>
+
+                                <strong
+                                    id="combat-lifesteal"
+                                >
+                                    0%
+                                </strong>
+                            </div>
+
+                        </div>
 
                     </div>
 
                 </div>
 
 
-                <!-- ATTACK -->
+                <!-- BATTLE LOG -->
 
-                <button
-                    class="engage-btn"
-                    id="attack-btn"
-                    type="button"
-                    onclick="playerAttack()"
-                >
-                    ⚔️ ZADAJ CIOS
-                </button>
-
-
-                <!-- RESUME -->
-
-                <button
-                    class="engage-btn mt-10"
-                    id="resume-btn"
-                    type="button"
-                    onclick="resumeExpedition()"
-                    style="
-                        display: none;
-                        border-color: var(--accent-gold);
-                        color: var(--accent-gold);
-                    "
-                >
-                    ▶ WZNÓW EKSPEDYCJĘ
-                </button>
-
-
-                <!-- COMBAT INFO -->
-
-                <div
-                    class="panel mt-20"
-                    id="combat-summary"
-                >
+                <div class="battle-log-panel">
 
                     <div class="panel-title">
-                        // SYSTEM BOJOWY
+                        ⚔ DZIENNIK WALKI
                     </div>
 
                     <div
-                        class="text-dim"
-                        id="combat-status"
-                    >
-                        Oczekiwanie na cel...
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- TELEMETRY -->
-
-            <aside class="telemetry-log">
-
-                <h3 class="mb-10">
-                    // TELEMETRIA WALKI
-                </h3>
-
-                <div
-                    id="battle-log"
-                    class="log-output"
-                    aria-live="polite"
-                    aria-label="Dziennik walki"
-                ></div>
-
-            </aside>
-
-        </section>
-
-
-        <!-- =================================================
-             [03] RULETKA / GACHA
-             ================================================= -->
-
-        <section
-            id="tab-gacha"
-            class="screen"
-            aria-labelledby="gacha-title"
-        >
-
-            <div class="center-module">
-
-                <h1
-                    id="gacha-title"
-                    class="screen-title"
-                >
-                    GENERATOR ARTEFAKTÓW
-                </h1>
-
-
-                <p class="text-dim text-center mb-20">
-                    Losuj schematy wyposażenia
-                    i odkrywaj nowe przedmioty.
-                </p>
-
-
-                <div
-                    class="egg-interact"
-                    id="main-egg"
-                    role="button"
-                    tabindex="0"
-                    aria-label="Generator artefaktów"
-                    onclick="openEgg()"
-                    onkeydown="if(event.key==='Enter' || event.key===' ') openEgg()"
-                >
-                    🥚
-                </div>
-
-
-                <div
-                    id="gacha-result"
-                    class="panel text-center"
-                    style="
-                        width: min(100%, 500px);
-                        min-height: 80px;
-                    "
-                >
-
-                    <span class="text-dim">
-                        Oczekiwanie na losowanie...
-                    </span>
-
-                </div>
-
-
-                <button
-                    class="engage-btn mt-20"
-                    type="button"
-                    onclick="openEgg()"
-                >
-                    🎰 POBIERZ SCHEMAT
-                    <br>
-
-                    <span
-                        class="text-dim"
-                        style="font-size: 0.9rem;"
-                    >
-                        Koszt:
-                        <span class="text-gold">
-                            500 🪙
-                        </span>
-                    </span>
-
-                </button>
-
-            </div>
-
-        </section>
-
-
-        <!-- =================================================
-             [04] INVENTORY / FORGE
-             ================================================= -->
-
-        <section
-            id="tab-inventory"
-            class="screen"
-            aria-labelledby="inventory-title"
-        >
-
-            <h1
-                id="inventory-title"
-                class="screen-title"
-            >
-                EKWIPUNEK & KUŹNIA
-            </h1>
-
-
-            <div class="inventory-layout">
-
-
-                <!-- CHARACTER -->
-
-                <div class="character-loadout">
-
-                    <h2 class="text-center mb-20">
-                        WYPOSAŻENIE
-                    </h2>
-
-
-                    <div
-                        class="loadout-grid"
-                        aria-label="Sloty wyposażenia"
-                    >
-
-                        <div
-                            class="gear-slot"
-                            id="slot-head"
-                            title="Hełm"
-                            aria-label="Slot hełmu"
-                        >
-                            🪖
-                        </div>
-
-                        <div
-                            class="gear-slot"
-                            id="slot-armor"
-                            title="Zbroja"
-                            aria-label="Slot zbroi"
-                        >
-                            👕
-                        </div>
-
-                        <div
-                            class="gear-slot"
-                            id="slot-weapon"
-                            title="Broń"
-                            aria-label="Slot broni"
-                        >
-                            🗡️
-                        </div>
-
-                        <div
-                            class="gear-slot"
-                            id="slot-amulet"
-                            title="Amulet"
-                            aria-label="Slot amuletu"
-                        >
-                            🧿
-                        </div>
-
-                        <div
-                            class="gear-slot"
-                            id="slot-ring"
-                            title="Pierścień"
-                            aria-label="Slot pierścienia"
-                        >
-                            💍
-                        </div>
-
-                    </div>
-
-
-                    <!-- ADVANCED STATS -->
-
-                    <div
-                        class="panel mt-20"
-                        id="advanced-stats"
-                    >
-
-                        <span class="text-accent text-bold">
-                            SUMA STATYSTYK:
-                        </span>
-
-                        <br>
-
-                        Max HP:
-                        <span class="text-green">
-                            100
-                        </span>
-
-                        <br>
-
-                        DMG:
-                        <span class="text-red">
-                            10
-                        </span>
-
-                        <br>
-
-                        DPS:
-                        <span class="text-yellow">
-                            0
-                        </span>
-
-                        <br>
-
-                        Kryt:
-                        5%
-
-                        <br>
-
-                        Lifesteal:
-                        0%
-
-                    </div>
-
-
-                    <button
-                        class="btn btn-danger mt-20"
-                        type="button"
-                        onclick="unequipAll()"
-                    >
-                        ↩ ZDEJMIJ CAŁE WYPOSAŻENIE
-                    </button>
-
-                </div>
-
-
-                <!-- BACKPACK -->
-
-                <div class="inventory-storage">
-
-                    <h2 class="text-center mb-20">
-                        PLECAK
-                    </h2>
-
-
-                    <div
-                        class="text-center text-dim mb-10"
-                    >
-                        Kliknij przedmiot, aby go
-                        podejrzeć.
-                    </div>
-
-                    <div
-                        id="inventory-grid"
-                        class="storage-grid"
-                        aria-label="Ekwipunek gracza"
+                        id="battle-log"
+                        class="battle-log"
                     ></div>
 
                 </div>
 
-
-                <!-- FORGE -->
-
-                <div class="forge-panel">
-
-                    <h2 class="text-center mb-20">
-                        ⚒️ KUŹNIA
-                    </h2>
+            </section>
 
 
-                    <div
-                        id="inspect-panel"
-                        class="text-center"
-                    >
+            <!-- =================================================
+                 INVENTORY
+                 ================================================= -->
 
-                        <div
-                            class="inspect-icon"
-                        >
-                            ⚒️
+            <section
+                id="screen-inventory"
+                class="game-screen"
+            >
+
+                <div class="page-header">
+
+                    <div>
+                        <div class="page-kicker">
+                            CHARACTER
                         </div>
 
-                        <h3 class="mb-10">
-                            BRAK WYBRANEGO PRZEDMIOTU
-                        </h3>
-
-                        <p class="text-dim">
-                            Wybierz przedmiot
-                            z plecaka.
-                        </p>
-
-                        <p class="text-dim mt-10">
-                            Ulepszanie wymaga
-                            <span class="text-gold">
-                                Złota
-                            </span>
-                            oraz
-                            <span class="text-dim">
-                                Żelaza
-                            </span>.
-                        </p>
-
+                        <h1>
+                            EKWIPUNEK
+                        </h1>
                     </div>
 
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- =================================================
-             [05] SKLEP
-             ================================================= -->
-
-        <section
-            id="tab-shop"
-            class="screen"
-            aria-labelledby="shop-title"
-        >
-
-            <h1
-                id="shop-title"
-                class="screen-title text-center"
-            >
-                RYNEK ZAAWANSOWANY
-            </h1>
-
-
-            <p class="text-dim text-center mb-20">
-                Kupuj permanentne ulepszenia
-                i tymczasowe wsparcie.
-            </p>
-
-
-            <div class="shop-grid">
-
-
-                <!-- PICKAXE -->
-
-                <div class="shop-card">
-
-                    <div
-                        class="inspect-icon"
-                        style="font-size: 3rem; min-height: auto;"
-                    >
-                        ⛏️
-                    </div>
-
-                    <h3 class="mb-10">
-                        WZMACNIACZ KILOfA
-                    </h3>
-
-                    <p class="text-dim">
-                        Więcej złota
-                        i większa szansa
-                        na rudy podczas wydobycia.
-                    </p>
-
-
-                    <button
-                        class="buy-btn"
-                        type="button"
-                        onclick="buyUpgrade('pickaxe')"
-                    >
-                        KUP —
-                        <span
-                            id="cost-pickaxe"
-                            class="text-gold"
-                        >
-                            100
-                        </span>
-                        🪙
-                    </button>
-
-                </div>
-
-
-                <!-- MERCENARY -->
-
-                <div class="shop-card">
-
-                    <div
-                        class="inspect-icon"
-                        style="font-size: 3rem; min-height: auto;"
-                    >
-                        🤖
-                    </div>
-
-                    <h3 class="mb-10">
-                        DRON BOJOWY
-                    </h3>
-
-                    <p class="text-dim">
-                        +15 DPS.
-                        Atakuje automatycznie
-                        podczas ekspedycji.
-                    </p>
-
-
-                    <button
-                        class="buy-btn"
-                        type="button"
-                        onclick="buyUpgrade('mercenary')"
-                    >
-                        KUP —
-                        <span
-                            id="cost-merc"
-                            class="text-gold"
-                        >
-                            500
-                        </span>
-                        🪙
-                    </button>
-
-                </div>
-
-
-                <!-- HEAL -->
-
-                <div class="shop-card">
-
-                    <div
-                        class="inspect-icon"
-                        style="font-size: 3rem; min-height: auto;"
-                    >
-                        ❤️
-                    </div>
-
-                    <h3 class="mb-10">
-                        LECZENIE
-                    </h3>
-
-                    <p class="text-dim">
-                        Natychmiast odnawia
-                        część aktualnego HP.
-                    </p>
-
-
-                    <button
-                        class="buy-btn"
-                        type="button"
-                        onclick="buyUpgrade('heal')"
-                    >
-                        KUP —
-                        <span class="text-gold">
-                            200
-                        </span>
-                        🪙
-                    </button>
-
-                </div>
-
-
-                <!-- OPTIONAL PLACEHOLDER -->
-
-                <div class="shop-card">
-
-                    <div
-                        class="inspect-icon"
-                        style="font-size: 3rem; min-height: auto;"
-                    >
-                        🔒
-                    </div>
-
-                    <h3 class="mb-10 text-dim">
-                        NIEZNANY MODUŁ
-                    </h3>
-
-                    <p class="text-dim">
-                        Odblokuj kolejne
-                        funkcje sklepu
-                        wraz z postępem.
-                    </p>
-
-
-                    <button
-                        class="buy-btn"
-                        type="button"
-                        disabled
-                    >
-                        ZABLOKOWANE
-                    </button>
-
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- =================================================
-             [06] SKILLE
-             ================================================= -->
-
-        <section
-            id="tab-skills"
-            class="screen"
-            aria-labelledby="skills-title"
-        >
-
-            <h1
-                id="skills-title"
-                class="screen-title text-center"
-            >
-                DRZEWKO UMIEJĘTNOŚCI
-            </h1>
-
-
-            <div class="panel text-center mb-20">
-
-                <div class="text-dim">
-                    DOSTĘPNE PUNKTY SKILLI
-                </div>
-
-                <span
-                    id="skill-points"
-                    class="text-accent text-bold"
-                    style="font-size: 1.8rem;"
-                >
-                    0
-                </span>
-
-            </div>
-
-
-            <div class="skill-tree">
-
-
-                <!-- HP -->
-
-                <div class="skill-node">
-
-                    <div
-                        class="inspect-icon"
-                        style="font-size: 3.5rem; min-height: auto;"
-                    >
-                        ❤️
-                    </div>
-
-                    <h3 class="mb-10">
-                        WITALNOŚĆ
-                    </h3>
-
-                    <p class="text-green">
-                        +20 Max HP / poziom
-                    </p>
-
-                    <p class="text-dim mt-10">
-                        Poziom:
-                        <span
-                            id="skill-lvl-hp"
-                            class="text-bright"
-                        >
+                    <div class="inventory-count">
+                        ITEMY:
+                        <span id="inventory-count">
                             0
                         </span>
-                        / 50
-                    </p>
-
-                    <button
-                        class="buy-btn"
-                        type="button"
-                        onclick="upgradeSkill('hp')"
-                    >
-                        ULEPSZ
-                    </button>
-
-                </div>
-
-
-                <!-- DMG -->
-
-                <div class="skill-node">
-
-                    <div
-                        class="inspect-icon"
-                        style="font-size: 3.5rem; min-height: auto;"
-                    >
-                        ⚔️
-                    </div>
-
-                    <h3 class="mb-10">
-                        FURIA
-                    </h3>
-
-                    <p class="text-red">
-                        +10 DMG / poziom
-                    </p>
-
-                    <p class="text-dim mt-10">
-                        Poziom:
-                        <span
-                            id="skill-lvl-dmg"
-                            class="text-bright"
-                        >
-                            0
-                        </span>
-                        / 50
-                    </p>
-
-                    <button
-                        class="buy-btn"
-                        type="button"
-                        onclick="upgradeSkill('dmg')"
-                    >
-                        ULEPSZ
-                    </button>
-
-                </div>
-
-
-                <!-- LIFESTEAL -->
-
-                <div class="skill-node">
-
-                    <div
-                        class="inspect-icon"
-                        style="font-size: 3.5rem; min-height: auto;"
-                    >
-                        🩸
-                    </div>
-
-                    <h3 class="mb-10">
-                        WAMPIRYZM
-                    </h3>
-
-                    <p class="text-purple">
-                        +1% Lifesteal / poziom
-                    </p>
-
-                    <p class="text-dim mt-10">
-                        Poziom:
-                        <span
-                            id="skill-lvl-lifesteal"
-                            class="text-bright"
-                        >
-                            0
-                        </span>
-                        / 20
-                    </p>
-
-                    <button
-                        class="buy-btn"
-                        type="button"
-                        onclick="upgradeSkill('lifesteal')"
-                    >
-                        ULEPSZ
-                    </button>
-
-                </div>
-
-
-                <!-- CRIT -->
-
-                <div class="skill-node">
-
-                    <div
-                        class="inspect-icon"
-                        style="font-size: 3.5rem; min-height: auto;"
-                    >
-                        🎯
-                    </div>
-
-                    <h3 class="mb-10">
-                        PRECYZJA
-                    </h3>
-
-                    <p class="text-gold">
-                        +2% Kryt / poziom
-                    </p>
-
-                    <p class="text-dim mt-10">
-                        Poziom:
-                        <span
-                            id="skill-lvl-crit"
-                            class="text-bright"
-                        >
-                            0
-                        </span>
-                        / 25
-                    </p>
-
-                    <button
-                        class="buy-btn"
-                        type="button"
-                        onclick="upgradeSkill('crit')"
-                    >
-                        ULEPSZ
-                    </button>
-
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- =================================================
-             [07] QUESTS / PRESTIGE
-             ================================================= -->
-
-        <section
-            id="tab-quests"
-            class="screen"
-            aria-labelledby="quests-title"
-        >
-
-            <div
-                class="screen active split-screen"
-                style="
-                    display: grid;
-                    min-height: 0;
-                    padding: 0;
-                "
-            >
-
-
-                <!-- QUESTS -->
-
-                <div>
-
-                    <h1
-                        id="quests-title"
-                        class="screen-title"
-                    >
-                        📜 AKTYWNE ZADANIA
-                    </h1>
-
-
-                    <!-- KILLS -->
-
-                    <div class="quest-card">
-
-                        <h3>
-                            POGROMCA BESTII
-                        </h3>
-
-                        <p>
-                            Zabij potwory
-                            w ekspedycjach:
-
-                            <br>
-
-                            <span
-                                id="q-kills"
-                                class="text-bright text-bold"
-                            >
-                                0
-                            </span>
-
-                            <span class="text-dim">
-                                /
-                            </span>
-
-                            <span class="text-dim">
-                                10
-                            </span>
-                        </p>
-
-
-                        <button
-                            class="buy-btn"
-                            id="btn-q-kills"
-                            type="button"
-                            onclick="claimQuest('kills')"
-                        >
-                            ODBIERZ —
-                            <span class="text-gold">
-                                1000 🪙
-                            </span>
-                        </button>
-
-                    </div>
-
-
-                    <!-- MINING -->
-
-                    <div class="quest-card mt-20">
-
-                        <h3>
-                            GÓRNIK PRZODOWY
-                        </h3>
-
-                        <p>
-                            Wydobądź surowce:
-
-                            <br>
-
-                            <span
-                                id="q-mines"
-                                class="text-bright text-bold"
-                            >
-                                0
-                            </span>
-
-                            <span class="text-dim">
-                                /
-                            </span>
-
-                            <span class="text-dim">
-                                50
-                            </span>
-
-                            razy
-                        </p>
-
-
-                        <button
-                            class="buy-btn"
-                            id="btn-q-mines"
-                            type="button"
-                            onclick="claimQuest('mines')"
-                        >
-                            ODBIERZ —
-                            <span class="text-accent">
-                                5 💠
-                            </span>
-                        </button>
-
-                    </div>
-
-
-                    <!-- QUEST PLACEHOLDER -->
-
-                    <div
-                        class="quest-card mt-20"
-                        style="
-                            opacity: 0.65;
-                            border-style: dashed;
-                        "
-                    >
-
-                        <h3 class="text-dim">
-                            NIEZNANE ZADANIE
-                        </h3>
-
-                        <p>
-                            Kolejne zadania zostaną
-                            odblokowane wraz
-                            z postępem bohatera.
-                        </p>
-
-                        <button
-                            class="buy-btn"
-                            type="button"
-                            disabled
-                        >
-                            ZABLOKOWANE
-                        </button>
-
                     </div>
 
                 </div>
 
 
-                <!-- PRESTIGE -->
+                <div class="character-layout">
 
-                <div
-                    class="prestige-container"
-                    style="
-                        border-left: 1px solid var(--border-dim);
-                        padding-left: 40px;
-                    "
-                >
+                    <!-- EQUIPMENT -->
 
-                    <h1
-                        class="screen-title text-purple"
-                    >
-                        🌟 SYSTEM PRESTIŻU
-                    </h1>
+                    <div class="equipment-panel panel-box">
+
+                        <div class="panel-title">
+                            ⚔ WYPOSAŻENIE
+                        </div>
 
 
-                    <p
-                        class="text-dim mb-20"
-                        style="line-height: 1.7;"
-                    >
-                        Osiągnij
-                        <span class="text-bright">
-                            Poziom 50
-                        </span>,
-                        aby zresetować część
-                        postępu gry.
-                    </p>
+                        <div class="character-preview">
 
+                            <div class="paper-doll">
 
-                    <p
-                        class="text-dim mb-20"
-                        style="line-height: 1.7;"
-                    >
-                        Resetowane:
-                        Złoto, Rudy, Level
-                        oraz Skille.
-                    </p>
+                                <div
+                                    id="slot-head"
+                                    class="equipment-slot slot-head"
+                                >
+                                    🪖
+                                </div>
 
+                                <div
+                                    id="slot-amulet"
+                                    class="equipment-slot slot-amulet"
+                                >
+                                    🧿
+                                </div>
 
-                    <p
-                        class="text-green mb-20"
-                        style="line-height: 1.7;"
-                    >
-                        Zachowujesz:
-                        Ekwipunek.
-                    </p>
+                                <div
+                                    id="slot-armor"
+                                    class="equipment-slot slot-armor"
+                                >
+                                    🛡️
+                                </div>
 
+                                <div
+                                    id="slot-weapon"
+                                    class="equipment-slot slot-weapon"
+                                >
+                                    ⚔️
+                                </div>
 
-                    <div
-                        class="panel text-center"
-                        style="
-                            background:
-                                rgba(192, 132, 252, 0.07);
+                                <div
+                                    id="slot-ring"
+                                    class="equipment-slot slot-ring"
+                                >
+                                    💍
+                                </div>
 
-                            border-color:
-                                var(--accent-purple);
+                                <div class="paper-character">
+                                    🧙
+                                </div>
 
-                            box-shadow:
-                                0 0 25px
-                                rgba(192, 132, 252, 0.05);
-                        "
-                    >
+                            </div>
 
-                        <h2
-                            class="text-purple mb-20"
-                        >
-                            MNOŻNIK GLOBALNY
-                        </h2>
-
-
-                        <p
-                            class="text-bold mb-20"
-                            style="font-size: 1.7rem;"
-                        >
-
-                            +
-
-                            <span
-                                id="prestige-multiplier"
-                                class="text-purple"
-                            >
-                                0
-                            </span>
-
-                            %
-
-                            <br>
-
-                            <span
-                                class="text-dim"
-                                style="font-size: 0.85rem;"
-                            >
-                                DMG • DPS • HP
-                            </span>
-
-                        </p>
+                        </div>
 
 
                         <div
-                            class="divider"
-                        ></div>
-
-
-                        <p class="mb-20">
-
-                            Posiadane Tokeny:
-
-                            <span
-                                id="prestige-tokens"
-                                class="text-purple text-bold"
-                            >
-                                0
-                            </span>
-
-                            🌟
-
-                        </p>
-
+                            id="advanced-stats"
+                            class="character-stats"
+                        >
+                        </div>
 
                         <button
-                            class="engage-btn"
-                            type="button"
-                            onclick="doPrestige()"
-                            style="
-                                border-color:
-                                    var(--accent-purple);
-
-                                color:
-                                    var(--accent-purple);
-                            "
+                            class="pixel-button secondary full"
+                            onclick="unequipAll()"
                         >
-                            🌟 AKTYWUJ PRESTIŻ
+                            ↩ ZDEJMIJ WSZYSTKO
+                        </button>
 
-                            <br>
+                    </div>
 
-                            <span
-                                class="text-dim"
-                                style="font-size: 0.8rem;"
-                            >
-                                WYMAGA POZIOMU 50
+
+                    <!-- INVENTORY -->
+
+                    <div class="inventory-panel panel-box">
+
+                        <div class="panel-title">
+                            🎒 PLECAK
+                        </div>
+
+                        <div
+                            id="inventory-grid"
+                            class="inventory-grid"
+                        ></div>
+
+                    </div>
+
+
+                    <!-- FORGE -->
+
+                    <div class="forge-panel panel-box">
+
+                        <div class="panel-title">
+                            🔨 KUŹNIA
+                        </div>
+
+                        <div
+                            id="inspect-panel"
+                            class="inspect-panel"
+                        >
+
+                            <div class="empty-state">
+                                <div class="empty-icon">
+                                    🔨
+                                </div>
+
+                                <strong>
+                                    NIE WYBRANO PRZEDMIOTU
+                                </strong>
+
+                                <span>
+                                    Wybierz przedmiot
+                                    z plecaka.
+                                </span>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 SKILLS
+                 ================================================= -->
+
+            <section
+                id="screen-skills"
+                class="game-screen"
+            >
+
+                <div class="page-header">
+
+                    <div>
+                        <div class="page-kicker">
+                            CHARACTER DEVELOPMENT
+                        </div>
+
+                        <h1>
+                            UMIEJĘTNOŚCI
+                        </h1>
+                    </div>
+
+                    <div class="skill-points-box">
+                        ✨
+                        <span id="skill-points">
+                            0
+                        </span>
+                        PUNKTÓW
+                    </div>
+
+                </div>
+
+
+                <div class="skills-grid">
+
+                    <div class="skill-card">
+                        <div class="skill-icon health">
+                            ❤️
+                        </div>
+
+                        <h3>
+                            WITALNOŚĆ
+                        </h3>
+
+                        <p>
+                            +20 Max HP
+                            na poziom
+                        </p>
+
+                        <div class="skill-level">
+                            LV
+                            <span id="skill-lvl-hp">
+                                0
                             </span>
+                            / 50
+                        </div>
 
+                        <button
+                            class="pixel-button secondary"
+                            onclick="upgradeSkill('hp')"
+                        >
+                            ULEPSZ
+                        </button>
+                    </div>
+
+
+                    <div class="skill-card">
+                        <div class="skill-icon damage">
+                            ⚔
+                        </div>
+
+                        <h3>
+                            FURIA
+                        </h3>
+
+                        <p>
+                            +10 DMG
+                            na poziom
+                        </p>
+
+                        <div class="skill-level">
+                            LV
+                            <span id="skill-lvl-dmg">
+                                0
+                            </span>
+                            / 50
+                        </div>
+
+                        <button
+                            class="pixel-button secondary"
+                            onclick="upgradeSkill('dmg')"
+                        >
+                            ULEPSZ
+                        </button>
+                    </div>
+
+
+                    <div class="skill-card">
+                        <div class="skill-icon lifesteal">
+                            🩸
+                        </div>
+
+                        <h3>
+                            WAMPIRYZM
+                        </h3>
+
+                        <p>
+                            +1% Lifesteal
+                            na poziom
+                        </p>
+
+                        <div class="skill-level">
+                            LV
+                            <span id="skill-lvl-lifesteal">
+                                0
+                            </span>
+                            / 20
+                        </div>
+
+                        <button
+                            class="pixel-button secondary"
+                            onclick="upgradeSkill('lifesteal')"
+                        >
+                            ULEPSZ
+                        </button>
+                    </div>
+
+
+                    <div class="skill-card">
+                        <div class="skill-icon crit">
+                            🎯
+                        </div>
+
+                        <h3>
+                            PRECYZJA
+                        </h3>
+
+                        <p>
+                            +2% Kryt
+                            na poziom
+                        </p>
+
+                        <div class="skill-level">
+                            LV
+                            <span id="skill-lvl-crit">
+                                0
+                            </span>
+                            / 25
+                        </div>
+
+                        <button
+                            class="pixel-button secondary"
+                            onclick="upgradeSkill('crit')"
+                        >
+                            ULEPSZ
+                        </button>
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 SHOP
+                 ================================================= -->
+
+            <section
+                id="screen-shop"
+                class="game-screen"
+            >
+
+                <div class="page-header">
+
+                    <div>
+                        <div class="page-kicker">
+                            MARKET
+                        </div>
+
+                        <h1>
+                            SKLEP WĘDROWCA
+                        </h1>
+                    </div>
+
+                </div>
+
+
+                <div class="shop-grid">
+
+                    <div class="shop-card">
+
+                        <div class="shop-icon">
+                            ⛏️
+                        </div>
+
+                        <h3>
+                            MISTRZOWSKI KILOF
+                        </h3>
+
+                        <p>
+                            Większa ilość złota
+                            oraz wyższa szansa
+                            na rudy.
+                        </p>
+
+                        <div class="shop-value">
+                            LV
+                            <span id="pickaxe-level">
+                                1
+                            </span>
+                        </div>
+
+                        <button
+                            class="pixel-button gold"
+                            onclick="buyUpgrade('pickaxe')"
+                        >
+                            KUP
+                            <span id="cost-pickaxe">
+                                100
+                            </span>
+                            🪙
+                        </button>
+
+                    </div>
+
+
+                    <div class="shop-card">
+
+                        <div class="shop-icon">
+                            🤖
+                        </div>
+
+                        <h3>
+                            DRON BOJOWY
+                        </h3>
+
+                        <p>
+                            Stały bonus DPS.
+                            Im wyższy poziom,
+                            tym większe obrażenia.
+                        </p>
+
+                        <div class="shop-value">
+                            LV
+                            <span id="mercenary-level">
+                                0
+                            </span>
+                        </div>
+
+                        <button
+                            class="pixel-button gold"
+                            onclick="buyUpgrade('mercenary')"
+                        >
+                            KUP
+                            <span id="cost-merc">
+                                500
+                            </span>
+                            🪙
+                        </button>
+
+                    </div>
+
+
+                    <div class="shop-card">
+
+                        <div class="shop-icon">
+                            ❤️
+                        </div>
+
+                        <h3>
+                            ELIXIR ŻYCIA
+                        </h3>
+
+                        <p>
+                            Natychmiast leczy
+                            50% maksymalnego HP.
+                        </p>
+
+                        <div class="shop-value">
+                            JEDNORAZOWE
+                        </div>
+
+                        <button
+                            class="pixel-button gold"
+                            onclick="buyUpgrade('heal')"
+                        >
+                            200 🪙
                         </button>
 
                     </div>
 
                 </div>
 
-            </div>
-
-        </section>
-
-    </main>
+            </section>
 
 
-    <!-- =====================================================
-         SCRIPTS
-         ===================================================== -->
+            <!-- =================================================
+                 QUESTS
+                 ================================================= -->
 
-    <script src="js/core.js"></script>
-    <script src="js/inventory.js"></script>
-    <script src="js/gacha.js"></script>
-    <script src="js/combat.js"></script>
+            <section
+                id="screen-quests"
+                class="game-screen"
+            >
+
+                <div class="page-header">
+
+                    <div>
+                        <div class="page-kicker">
+                            ADVENTURE
+                        </div>
+
+                        <h1>
+                            ZADANIA
+                        </h1>
+                    </div>
+
+                </div>
 
 
-    <!-- =====================================================
-         OPTIONAL NAVIGATION FALLBACK
-         ===================================================== -->
+                <div class="quests-layout">
 
-    <script>
-        /*
-         * Lekki fallback dla nawigacji.
-         *
-         * Jeżeli core.js posiada już openTab(),
-         * ta funkcja nie nadpisuje istniejącej.
-         */
+                    <div class="quest-list">
 
-        if (typeof window.openTab !== "function") {
+                        <div class="quest-card">
 
-            window.openTab = function(tabId) {
+                            <div class="quest-icon">
+                                ⚔
+                            </div>
 
-                const screens =
-                    document.querySelectorAll(".screen");
+                            <div class="quest-body">
 
-                const tabs =
-                    document.querySelectorAll(".tab-btn");
+                                <h3>
+                                    POGROMCA BESTII
+                                </h3>
 
-                screens.forEach(screen => {
-                    screen.classList.remove("active");
-                });
+                                <p>
+                                    Pokonaj 10 przeciwników.
+                                </p>
 
-                tabs.forEach(tab => {
-                    tab.classList.remove("active");
-                });
+                                <div class="quest-progress">
+                                    <span id="q-kills">
+                                        0
+                                    </span>
+                                    /
+                                    10
+                                </div>
 
-                const target =
-                    document.getElementById(tabId);
+                                <button
+                                    id="btn-q-kills"
+                                    class="pixel-button gold"
+                                    onclick="claimQuest('kills')"
+                                    disabled
+                                >
+                                    ODBIERZ 1000 🪙
+                                </button>
 
-                const button =
-                    document.querySelector(
-                        `.tab-btn[data-tab="${tabId}"]`
-                    );
+                            </div>
 
-                if (target) {
-                    target.classList.add("active");
-                }
+                        </div>
 
-                if (button) {
-                    button.classList.add("active");
-                }
-            };
-        }
-    </script>
+
+                        <div class="quest-card">
+
+                            <div class="quest-icon">
+                                ⛏
+                            </div>
+
+                            <div class="quest-body">
+
+                                <h3>
+                                    GÓRNIK PRZODOWY
+                                </h3>
+
+                                <p>
+                                    Wydobądź surowce
+                                    50 razy.
+                                </p>
+
+                                <div class="quest-progress">
+                                    <span id="q-mines">
+                                        0
+                                    </span>
+                                    /
+                                    50
+                                </div>
+
+                                <button
+                                    id="btn-q-mines"
+                                    class="pixel-button gold"
+                                    onclick="claimQuest('mines')"
+                                    disabled
+                                >
+                                    ODBIERZ 5 💎
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="prestige-card">
+
+                        <div class="prestige-icon">
+                            ✦
+                        </div>
+
+                        <div class="page-kicker">
+                            ENDGAME
+                        </div>
+
+                        <h2>
+                            PRESTIŻ
+                        </h2>
+
+                        <p>
+                            Osiągnij poziom 50,
+                            aby rozpocząć nowe
+                            życie i zdobyć stały
+                            bonus do statystyk.
+                        </p>
+
+                        <div class="prestige-number">
+                            +
+                            <span id="prestige-multiplier">
+                                0
+                            </span>
+                            %
+                        </div>
+
+                        <div class="prestige-small">
+                            GLOBALNY BONUS
+                        </div>
+
+                        <div class="prestige-tokens">
+                            ✦
+                            <span id="prestige-tokens">
+                                0
+                            </span>
+                        </div>
+
+                        <button
+                            class="pixel-button purple"
+                            onclick="doPrestige()"
+                        >
+                            AKTYWUJ PRESTIŻ
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 GACHA
+                 ================================================= -->
+
+            <section
+                id="screen-gacha"
+                class="game-screen"
+            >
+
+                <div class="page-header">
+
+                    <div>
+                        <div class="page-kicker">
+                            LOOT SYSTEM
+                        </div>
+
+                        <h1>
+                            SKRZYNIE ARTEFAKTÓW
+                        </h1>
+                    </div>
+
+                    <div class="chest-cost">
+                        500 🪙
+                    </div>
+
+                </div>
+
+
+                <div class="gacha-layout">
+
+                    <div class="chest-scene">
+
+                        <div
+                            id="main-egg"
+                            class="pixel-chest"
+                            onclick="openEgg()"
+                        >
+                            🎁
+                        </div>
+
+                        <div class="chest-rays"></div>
+
+                        <button
+                            class="pixel-button gold chest-button"
+                            onclick="openEgg()"
+                        >
+                            OTWÓRZ SKRZYNIĘ
+                            <span>
+                                500 🪙
+                            </span>
+                        </button>
+
+                    </div>
+
+
+                    <div class="gacha-result-panel">
+
+                        <div class="panel-title">
+                            🎁 OSTATNI DROP
+                        </div>
+
+                        <div
+                            id="gacha-result"
+                            class="gacha-result"
+                        >
+
+                            <div class="empty-icon">
+                                ?
+                            </div>
+
+                            <strong>
+                                OTWÓRZ SKRZYNIĘ
+                            </strong>
+
+                            <span>
+                                aby zdobyć przedmiot
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     SCRIPTS
+     ========================================================= -->
+
+<script src="js/inventory.js"></script>
+<script src="js/gacha.js"></script>
+<script src="js/combat.js"></script>
+<script src="js/core.js"></script>
 
 </body>
 </html>

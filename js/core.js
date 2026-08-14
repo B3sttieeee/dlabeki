@@ -1,16 +1,9 @@
-/* =========================================================
-   D&E // TERMINAL V6
-   CORE ENGINE
-   ========================================================= */
-
 (() => {
     "use strict";
 
-    /* =====================================================
-       DEFAULT GAME DATA
-       ===================================================== */
+    const SAVE_KEY = "pixel_realms_save_v1";
 
-    const DEFAULT_GAME_DATA = {
+    const DEFAULT_DATA = {
         gold: 0,
         iron: 0,
         mithril: 0,
@@ -22,13 +15,13 @@
         pickaxeLevel: 1,
         mercenaryLevel: 0,
 
-        highestDungeon: 1,
-
         level: 1,
         exp: 0,
         maxExp: 100,
 
         skillPoints: 0,
+
+        prestige: 0,
 
         skills: {
             hp: 0,
@@ -36,8 +29,6 @@
             lifesteal: 0,
             crit: 0
         },
-
-        prestige: 0,
 
         quests: {
             kills: 0,
@@ -47,35 +38,26 @@
         }
     };
 
-    /* =====================================================
-       GLOBAL PLAYER STATE
-       ===================================================== */
-
-    window.gameData =
-        createDefaultGameData();
+    window.gameData = structuredCloneSafe(DEFAULT_DATA);
 
     window.playerMaxHp = 100;
     window.playerCurrentHp = 100;
 
+    window.totalDmg = 10;
+    window.totalDps = 0;
+    window.totalCrit = 5;
+    window.totalLifesteal = 0;
+
     window.isDead = false;
     window.isFighting = false;
 
-    window.gameInitialized = false;
+    function structuredCloneSafe(value) {
+        return JSON.parse(
+            JSON.stringify(value)
+        );
+    }
 
-    /* =====================================================
-       STORAGE
-       ===================================================== */
-
-    const STORAGE_KEY = "nasa_save_v6";
-
-    /* =====================================================
-       HELPERS
-       ===================================================== */
-
-    function safeNumber(
-        value,
-        fallback = 0
-    ) {
+    function safeNumber(value, fallback = 0) {
         const n = Number(value);
 
         return Number.isFinite(n)
@@ -83,389 +65,166 @@
             : fallback;
     }
 
-    function clamp(
-        value,
-        min,
-        max
-    ) {
-        return Math.min(
-            Math.max(value, min),
-            max
-        );
-    }
-
-    function deepClone(obj) {
-        return JSON.parse(
-            JSON.stringify(obj)
-        );
-    }
-
-    function createDefaultGameData() {
-        return deepClone(
-            DEFAULT_GAME_DATA
-        );
-    }
-
-    function mergeGameData(saved) {
-
-        const defaults =
-            createDefaultGameData();
-
-        if (
-            !saved ||
-            typeof saved !== "object"
-        ) {
-            return defaults;
-        }
-
-        const merged = {
-            ...defaults,
-            ...saved,
-
-            skills: {
-                ...defaults.skills,
-                ...(saved.skills || {})
-            },
-
-            quests: {
-                ...defaults.quests,
-                ...(saved.quests || {})
-            }
-        };
-
-        return merged;
-    }
-
-    function getElement(id) {
+    function el(id) {
         return document.getElementById(id);
     }
 
-    function setText(
-        id,
-        value
-    ) {
-        const element =
-            getElement(id);
+    function text(id, value) {
+        const node = el(id);
 
-        if (element) {
-            element.textContent =
-                value;
+        if (node) {
+            node.textContent = value;
         }
     }
 
-    function setWidth(
-        id,
-        percentage
-    ) {
-        const element =
-            getElement(id);
+    function mergeData(saved) {
 
-        if (!element) {
-            return;
-        }
+        return {
+            ...structuredCloneSafe(DEFAULT_DATA),
+            ...(saved || {}),
 
-        element.style.width =
-            `${clamp(
-                safeNumber(
-                    percentage,
-                    0
-                ),
-                0,
-                100
-            )}%`;
+            skills: {
+                ...DEFAULT_DATA.skills,
+                ...(saved?.skills || {})
+            },
+
+            quests: {
+                ...DEFAULT_DATA.quests,
+                ...(saved?.quests || {})
+            }
+        };
     }
 
-    function notify(message) {
-        if (
-            typeof window.logMessage ===
-            "function"
-        ) {
-            window.logMessage(
-                message
-            );
+
+    /* =====================================================
+       NAVIGATION
+       ===================================================== */
+
+    window.openTab = function(tabId, button) {
+
+        document
+            .querySelectorAll(".game-screen")
+            .forEach(screen => {
+                screen.classList.remove("active");
+            });
+
+        document
+            .querySelectorAll(".menu-btn")
+            .forEach(btn => {
+                btn.classList.remove("active");
+            });
+
+        const target = el(tabId);
+
+        if (target) {
+            target.classList.add("active");
+        }
+
+        if (button) {
+            button.classList.add("active");
         } else {
-            console.log(
-                message
+            const matching =
+                document.querySelector(
+                    `.menu-btn[data-screen="${tabId.replace("screen-", "")}"]`
+                );
+
+            if (matching) {
+                matching.classList.add("active");
+            }
+        }
+    };
+
+
+    /* =====================================================
+       SAVE
+       ===================================================== */
+
+    window.saveGame = function() {
+
+        try {
+
+            localStorage.setItem(
+                SAVE_KEY,
+                JSON.stringify(
+                    window.gameData
+                )
+            );
+
+            if (
+                typeof window.saveInventory ===
+                "function"
+            ) {
+                window.saveInventory();
+            }
+
+            if (
+                typeof window.saveCombat ===
+                "function"
+            ) {
+                window.saveCombat();
+            }
+
+        } catch (error) {
+            console.error(
+                "Save error:",
+                error
             );
         }
-    }
+    };
+
 
     /* =====================================================
-       TAB SYSTEM
+       LOAD
        ===================================================== */
 
-    window.openTab =
-        function openTab(tabId) {
+    window.loadGame = function() {
 
-            const screens =
-                document.querySelectorAll(
-                    ".screen"
+        try {
+
+            const saved =
+                localStorage.getItem(
+                    SAVE_KEY
                 );
 
-            const buttons =
-                document.querySelectorAll(
-                    ".tab-btn"
-                );
-
-            screens.forEach(
-                screen => {
-                    screen.classList.remove(
-                        "active"
-                    );
-                }
-            );
-
-            buttons.forEach(
-                button => {
-                    button.classList.remove(
-                        "active"
-                    );
-                }
-            );
-
-            const targetScreen =
-                getElement(tabId);
-
-            if (targetScreen) {
-                targetScreen.classList.add(
-                    "active"
-                );
-            }
-
-            /*
-             * Najpierw szukamy po data-tab,
-             * a dla kompatybilności również
-             * po onclick.
-             */
-
-            let activeButton =
-                document.querySelector(
-                    `.tab-btn[data-tab="${tabId}"]`
-                );
-
-            if (!activeButton) {
-                activeButton =
-                    document.querySelector(
-                        `.tab-btn[onclick*="${tabId}"]`
-                    );
-            }
-
-            if (activeButton) {
-                activeButton.classList.add(
-                    "active"
-                );
-            }
-
-            /*
-             * Potwór atakuje tylko podczas
-             * aktywnej zakładki ekspedycji.
-             */
-
-            window.isFighting =
-                (
-                    tabId === "tab-combat" &&
-                    !window.isDead
-                );
-
-            /*
-             * Aktualizacja questów
-             */
-
-            if (
-                tabId === "tab-quests" &&
-                typeof window.updateQuestsUI ===
-                    "function"
-            ) {
-                window.updateQuestsUI();
-            }
-
-            /*
-             * Odświeżenie inventory
-             */
-
-            if (
-                tabId === "tab-inventory" &&
-                typeof window.renderInventory ===
-                    "function"
-            ) {
-                window.renderInventory();
-            }
-        };
-
-    /* =====================================================
-       SAVE GAME
-       ===================================================== */
-
-    window.saveGame =
-        function saveGame() {
-
-            try {
-
-                localStorage.setItem(
-                    STORAGE_KEY,
-                    JSON.stringify(
-                        window.gameData
-                    )
-                );
-
-                if (
-                    typeof window.saveInventory ===
-                    "function"
-                ) {
-                    window.saveInventory();
-                }
-
-                if (
-                    typeof window.saveCombat ===
-                    "function"
-                ) {
-                    window.saveCombat();
-                }
-
-                return true;
-
-            } catch (error) {
-
-                console.error(
-                    "Błąd zapisu gry:",
-                    error
-                );
-
-                return false;
-            }
-        };
-
-    /* =====================================================
-       LOAD GAME
-       ===================================================== */
-
-    window.loadGame =
-        function loadGame() {
-
-            try {
-
-                const saved =
-                    localStorage.getItem(
-                        STORAGE_KEY
-                    );
-
-                if (saved) {
-
-                    const parsed =
-                        JSON.parse(
-                            saved
-                        );
-
-                    window.gameData =
-                        mergeGameData(
-                            parsed
-                        );
-
-                } else {
-
-                    window.gameData =
-                        createDefaultGameData();
-                }
-
-            } catch (error) {
-
-                console.error(
-                    "Błąd wczytywania zapisu:",
-                    error
-                );
-
-                notify(
-                    "⚠️ Nie udało się odczytać zapisu. Załadowano bezpieczny profil."
-                );
+            if (saved) {
 
                 window.gameData =
-                    createDefaultGameData();
-            }
-
-            /*
-             * Dodatkowe zabezpieczenia
-             */
-
-            sanitizeGameData();
-
-            /*
-             * Załaduj UI
-             */
-
-            if (
-                typeof window.updateShopUI ===
-                "function"
-            ) {
-                window.updateShopUI();
-            }
-
-            if (
-                typeof window.updateSkillsUI ===
-                "function"
-            ) {
-                window.updateSkillsUI();
-            }
-
-            if (
-                typeof window.updateQuestsUI ===
-                "function"
-            ) {
-                window.updateQuestsUI();
-            }
-
-            /*
-             * Inventory przelicza dodatkowe statystyki.
-             */
-
-            if (
-                typeof window.recalculatePlayerStats ===
-                "function"
-            ) {
-                window.recalculatePlayerStats();
-            } else {
-                window.playerMaxHp =
-                    calculateBaseMaxHp();
-            }
-
-            /*
-             * Po załadowaniu zapisujemy pełne HP.
-             */
-
-            window.playerCurrentHp =
-                window.playerMaxHp;
-
-            window.isDead = false;
-            window.isFighting = false;
-
-            updateStatusUI();
-
-            if (
-                typeof window.loadCombat ===
-                "function"
-            ) {
-                try {
-                    window.loadCombat();
-                } catch (error) {
-                    console.error(
-                        "Błąd loadCombat():",
-                        error
+                    mergeData(
+                        JSON.parse(saved)
                     );
-                }
             }
-        };
 
-    /* =====================================================
-       SANITIZE GAME DATA
-       ===================================================== */
+        } catch (error) {
 
-    function sanitizeGameData() {
+            console.error(
+                "Load error:",
+                error
+            );
+
+            window.gameData =
+                structuredCloneSafe(
+                    DEFAULT_DATA
+                );
+        }
+
+        sanitize();
+
+        updateAllUI();
+
+        window.playerMaxHp =
+            calculateMaxHp();
+
+        window.playerCurrentHp =
+            window.playerMaxHp;
+
+        updateStatus();
+    };
+
+
+    function sanitize() {
 
         const g =
             window.gameData;
-
-        /*
-         * Resources
-         */
 
         g.gold =
             Math.max(
@@ -477,9 +236,7 @@
             Math.max(
                 0,
                 Math.floor(
-                    safeNumber(
-                        g.iron
-                    )
+                    safeNumber(g.iron)
                 )
             );
 
@@ -487,31 +244,47 @@
             Math.max(
                 0,
                 Math.floor(
+                    safeNumber(g.mithril)
+                )
+            );
+
+        g.level =
+            Math.max(
+                1,
+                Math.floor(
+                    safeNumber(g.level, 1)
+                )
+            );
+
+        g.exp =
+            Math.max(
+                0,
+                safeNumber(g.exp)
+            );
+
+        g.maxExp =
+            Math.max(
+                1,
+                safeNumber(g.maxExp, 100)
+            );
+
+        g.skillPoints =
+            Math.max(
+                0,
+                Math.floor(
                     safeNumber(
-                        g.mithril
+                        g.skillPoints
                     )
                 )
             );
 
-        /*
-         * Base stats
-         */
-
-        g.baseDmg =
+        g.prestige =
             Math.max(
                 0,
-                safeNumber(
-                    g.baseDmg,
-                    10
-                )
-            );
-
-        g.baseDps =
-            Math.max(
-                0,
-                safeNumber(
-                    g.baseDps,
-                    0
+                Math.floor(
+                    safeNumber(
+                        g.prestige
+                    )
                 )
             );
 
@@ -523,10 +296,6 @@
                     1
                 )
             );
-
-        /*
-         * Upgrades
-         */
 
         g.pickaxeLevel =
             Math.max(
@@ -549,1898 +318,1121 @@
                 )
             );
 
-        /*
-         * Dungeon
-         */
-
-        g.highestDungeon =
-            Math.max(
-                1,
-                Math.floor(
-                    safeNumber(
-                        g.highestDungeon,
-                        1
-                    )
-                )
-            );
-
-        /*
-         * Level
-         */
-
-        g.level =
-            Math.max(
-                1,
-                Math.floor(
-                    safeNumber(
-                        g.level,
-                        1
-                    )
-                )
-            );
-
-        g.exp =
-            Math.max(
-                0,
-                safeNumber(
-                    g.exp
-                )
-            );
-
-        g.maxExp =
-            Math.max(
-                1,
-                safeNumber(
-                    g.maxExp,
-                    100
-                )
-            );
-
-        /*
-         * Skill points
-         */
-
-        g.skillPoints =
-            Math.max(
-                0,
-                Math.floor(
-                    safeNumber(
-                        g.skillPoints
-                    )
-                )
-            );
-
-        /*
-         * Skills
-         */
-
         g.skills.hp =
-            clamp(
-                Math.floor(
-                    safeNumber(
-                        g.skills.hp
+            Math.min(
+                50,
+                Math.max(
+                    0,
+                    Math.floor(
+                        safeNumber(
+                            g.skills.hp
+                        )
                     )
-                ),
-                0,
-                50
+                )
             );
 
         g.skills.dmg =
-            clamp(
-                Math.floor(
-                    safeNumber(
-                        g.skills.dmg
+            Math.min(
+                50,
+                Math.max(
+                    0,
+                    Math.floor(
+                        safeNumber(
+                            g.skills.dmg
+                        )
                     )
-                ),
-                0,
-                50
+                )
             );
 
         g.skills.lifesteal =
-            clamp(
-                Math.floor(
-                    safeNumber(
-                        g.skills.lifesteal
+            Math.min(
+                20,
+                Math.max(
+                    0,
+                    Math.floor(
+                        safeNumber(
+                            g.skills.lifesteal
+                        )
                     )
-                ),
-                0,
-                20
+                )
             );
 
         g.skills.crit =
-            clamp(
-                Math.floor(
-                    safeNumber(
-                        g.skills.crit
+            Math.min(
+                25,
+                Math.max(
+                    0,
+                    Math.floor(
+                        safeNumber(
+                            g.skills.crit
+                        )
                     )
-                ),
-                0,
-                25
-            );
-
-        /*
-         * Prestige
-         */
-
-        g.prestige =
-            Math.max(
-                0,
-                Math.floor(
-                    safeNumber(
-                        g.prestige
-                    )
-                )
-            );
-
-        /*
-         * Quests
-         */
-
-        g.quests.kills =
-            Math.max(
-                0,
-                Math.floor(
-                    safeNumber(
-                        g.quests.kills
-                    )
-                )
-            );
-
-        g.quests.mines =
-            Math.max(
-                0,
-                Math.floor(
-                    safeNumber(
-                        g.quests.mines
-                    )
-                )
-            );
-
-        g.quests.killsClaimed =
-            Boolean(
-                g.quests.killsClaimed
-            );
-
-        g.quests.minesClaimed =
-            Boolean(
-                g.quests.minesClaimed
-            );
+                );
+        );
     }
 
+
     /* =====================================================
-       BASE HP
+       STATS
        ===================================================== */
 
-    function calculateBaseMaxHp() {
+    function calculateMaxHp() {
 
-        const skills =
-            window.gameData.skills;
+        const base =
+            100 +
+            window.gameData.skills.hp *
+            20;
 
-        return Math.max(
-            1,
-
-            Math.floor(
-                (
-                    100 +
-                    (
-                        skills.hp *
-                        20
-                    )
-                )
-                *
-                (
-                    1 +
-                    (
-                        window.gameData.prestige *
-                        0.5
-                    )
-                )
+        return Math.floor(
+            base *
+            (
+                1 +
+                window.gameData.prestige *
+                0.5
             )
         );
     }
 
+
+    window.recalculatePlayerStats =
+    function() {
+
+        const g =
+            window.gameData;
+
+        let dmg =
+            g.baseDmg +
+            g.skills.dmg * 10;
+
+        let dps =
+            g.baseDps;
+
+        let hp =
+            100 +
+            g.skills.hp * 20;
+
+        let crit =
+            5 +
+            g.skills.crit * 2;
+
+        let lifesteal =
+            g.skills.lifesteal;
+
+        if (
+            window.equipped
+        ) {
+
+            Object.values(
+                window.equipped
+            ).forEach(item => {
+
+                if (!item) {
+                    return;
+                }
+
+                const level =
+                    Number(
+                        item.upgradeLevel
+                    ) || 0;
+
+                const mult =
+                    1 +
+                    level * 0.10;
+
+                dmg +=
+                    Math.floor(
+                        (item.dmgBonus || 0) *
+                        mult
+                    );
+
+                dps +=
+                    Math.floor(
+                        (item.dpsBonus || 0) *
+                        mult
+                    );
+
+                hp +=
+                    Math.floor(
+                        (item.hpBonus || 0) *
+                        mult
+                    );
+
+                crit +=
+                    Number(
+                        item.critBonus || 0
+                    );
+
+                lifesteal +=
+                    Number(
+                        item.lifestealBonus || 0
+                    );
+            });
+        }
+
+        const prestige =
+            1 +
+            g.prestige * 0.5;
+
+        window.totalDmg =
+            Math.floor(
+                dmg * prestige
+            );
+
+        window.totalDps =
+            Math.floor(
+                dps * prestige
+            );
+
+        window.playerMaxHp =
+            Math.max(
+                1,
+                Math.floor(
+                    hp * prestige
+                )
+            );
+
+        window.totalCrit =
+            Math.min(
+                100,
+                Number(
+                    crit.toFixed(1)
+                )
+            );
+
+        window.totalLifesteal =
+            Math.min(
+                100,
+                Number(
+                    lifesteal.toFixed(1)
+                )
+            );
+
+        window.playerCurrentHp =
+            Math.min(
+                window.playerCurrentHp,
+                window.playerMaxHp
+            );
+
+        updateStatus();
+
+        if (
+            typeof window.renderCombatStats ===
+            "function"
+        ) {
+            window.renderCombatStats();
+        }
+    };
+
+
     /* =====================================================
-       MINING SYSTEM
+       MINING
        ===================================================== */
 
-    window.mineGold =
-        function mineGold() {
+    window.mineGold = function() {
 
-            const g =
-                window.gameData;
+        const g =
+            window.gameData;
 
-            /*
-             * Podstawa wydobycia.
-             */
-
-            const baseAmount =
-                Math.max(
-                    1,
-                    Math.floor(
-                        safeNumber(
-                            g.clickPower,
-                            1
-                        )
-                    )
-                );
-
-            /*
-             * Losowy bonus zależny
-             * od poziomu kilofa.
-             */
-
-            const randomBonus =
+        const amount =
+            Math.max(
+                1,
                 Math.floor(
+                    g.clickPower +
                     Math.random() *
-                    (
-                        Math.max(
-                            1,
-                            g.pickaxeLevel * 2
-                        )
-                    )
-                );
+                    g.pickaxeLevel *
+                    2
+                )
+            );
 
-            const mined =
-                baseAmount +
-                randomBonus;
+        g.gold += amount;
 
-            g.gold +=
-                mined;
+        if (
+            Math.random() <
+            0.05 +
+            g.pickaxeLevel *
+            0.01
+        ) {
 
-            /*
-             * ŻELAZO
-             *
-             * 5% + 1% za poziom kilofa.
-             */
+            g.iron++;
 
-            const ironChance =
-                Math.min(
-                    0.5,
-                    0.05 +
-                    (
-                        g.pickaxeLevel *
-                        0.01
-                    )
-                );
+            logMessage(
+                "🔩 Znaleziono Żelazo!"
+            );
+        }
 
-            if (
-                Math.random() <
-                ironChance
-            ) {
+        if (
+            Math.random() <
+            0.01 +
+            g.pickaxeLevel *
+            0.002
+        ) {
 
-                g.iron++;
+            g.mithril++;
 
-                notify(
-                    "🔩 Wykopano Żelazo!"
-                );
-            }
+            logMessage(
+                "💎 Znaleziono Mithril!"
+            );
+        }
 
-            /*
-             * MITHRIL
-             */
+        g.quests.mines++;
 
-            const mithrilChance =
-                Math.min(
-                    0.25,
-                    0.01 +
-                    (
-                        g.pickaxeLevel *
-                        0.002
-                    )
-                );
+        updateStatus();
 
-            if (
-                Math.random() <
-                mithrilChance
-            ) {
+        saveGame();
 
-                g.mithril++;
+        const rock =
+            document.querySelector(
+                ".mine-interact"
+            );
 
-                notify(
-                    "💠 Wykopano Mithril!"
-                );
-            }
+        if (rock) {
 
-            /*
-             * QUEST
-             */
+            rock.style.transform =
+                "translateY(5px) scale(.95)";
 
-            g.quests.mines++;
+            setTimeout(() => {
+                rock.style.transform = "";
+            }, 90);
+        }
+    };
 
-            /*
-             * UI
-             */
-
-            updateStatusUI();
-
-            if (
-                typeof window.updateQuestsUI ===
-                "function"
-            ) {
-                window.updateQuestsUI();
-            }
-
-            /*
-             * Animacja skały
-             */
-
-            const rock =
-                document.querySelector(
-                    ".mine-interact"
-                );
-
-            if (rock) {
-
-                rock.style.transform =
-                    "scale(0.9) translateY(10px)";
-
-                window.setTimeout(
-                    () => {
-
-                        rock.style.transform =
-                            "";
-
-                    },
-                    80
-                );
-            }
-
-            /*
-             * Jeśli później będzie licznik
-             * wydobytych surowców:
-             */
-
-            const mineStatus =
-                getElement(
-                    "mine-status"
-                );
-
-            if (mineStatus) {
-
-                mineStatus.innerHTML =
-                    `
-                        <span class="text-gold">
-                            +${mined} 🪙
-                        </span>
-                    `;
-            }
-
-            /*
-             * Lekki autosave po kopnięciu.
-             */
-
-            saveGame();
-
-            return mined;
-        };
 
     /* =====================================================
        SHOP
        ===================================================== */
 
     window.buyUpgrade =
-        function buyUpgrade(type) {
+    function(type) {
 
-            const g =
-                window.gameData;
+        const g =
+            window.gameData;
 
-            /*
-             * KILOF
-             */
+        if (
+            type === "pickaxe"
+        ) {
 
-            if (
-                type === "pickaxe"
-            ) {
-
-                const cost =
-                    100 *
-                    g.pickaxeLevel;
-
-                if (
-                    g.gold >=
-                    cost
-                ) {
-
-                    g.gold -=
-                        cost;
-
-                    g.clickPower +=
-                        3;
-
-                    g.pickaxeLevel++;
-
-                    notify(
-                        `⛏️ Kilof ulepszony do poziomu ${g.pickaxeLevel}.`
-                    );
-
-                } else {
-
-                    notify(
-                        `❌ Brak złota. Potrzebujesz ${cost} 🪙.`
-                    );
-                }
-            }
-
-            /*
-             * DRON / MERCENARY
-             */
-
-            else if (
-                type === "mercenary"
-            ) {
-
-                const cost =
-                    500 *
-                    (
-                        g.mercenaryLevel +
-                        1
-                    );
-
-                if (
-                    g.gold >=
-                    cost
-                ) {
-
-                    g.gold -=
-                        cost;
-
-                    g.baseDps +=
-                        15;
-
-                    g.mercenaryLevel++;
-
-                    notify(
-                        `🤖 Dron bojowy ulepszony do poziomu ${g.mercenaryLevel}.`
-                    );
-
-                } else {
-
-                    notify(
-                        `❌ Brak złota. Potrzebujesz ${cost} 🪙.`
-                    );
-                }
-            }
-
-            /*
-             * HEAL
-             */
-
-            else if (
-                type === "heal"
-            ) {
-
-                const cost =
-                    200;
-
-                if (
-                    g.gold < cost
-                ) {
-
-                    notify(
-                        `❌ Brak złota. Potrzebujesz ${cost} 🪙.`
-                    );
-
-                } else if (
-                    window.playerCurrentHp >=
-                    window.playerMaxHp
-                ) {
-
-                    notify(
-                        "❤️ Masz pełne zdrowie."
-                    );
-
-                } else {
-
-                    g.gold -=
-                        cost;
-
-                    const amount =
-                        Math.floor(
-                            window.playerMaxHp *
-                            0.5
-                        );
-
-                    healPlayer(
-                        amount
-                    );
-
-                    notify(
-                        `❤️ Odzyskano ${amount} HP.`
-                    );
-                }
-            }
-
-            else {
-                console.warn(
-                    "Nieznany typ upgrade:",
-                    type
-                );
-
-                return false;
-            }
-
-            /*
-             * UI
-             */
-
-            updateStatusUI();
-            updateShopUI();
-
-            if (
-                typeof window.recalculatePlayerStats ===
-                "function"
-            ) {
-                window.recalculatePlayerStats();
-            }
-
-            saveGame();
-
-            return true;
-        };
-
-    /* =====================================================
-       SHOP UI
-       ===================================================== */
-
-    window.updateShopUI =
-        function updateShopUI() {
-
-            const g =
-                window.gameData;
-
-            const pickaxeCost =
+            const cost =
                 100 *
                 g.pickaxeLevel;
 
-            const mercenaryCost =
+            if (
+                g.gold < cost
+            ) {
+
+                logMessage(
+                    "❌ Za mało złota."
+                );
+
+                return;
+            }
+
+            g.gold -= cost;
+
+            g.clickPower += 3;
+            g.pickaxeLevel++;
+
+            logMessage(
+                `⛏️ Kilof +1 — poziom ${g.pickaxeLevel}.`
+            );
+        }
+
+
+        else if (
+            type === "mercenary"
+        ) {
+
+            const cost =
                 500 *
                 (
                     g.mercenaryLevel +
                     1
                 );
 
-            setText(
-                "cost-pickaxe",
-                pickaxeCost
-            );
+            if (
+                g.gold < cost
+            ) {
 
-            setText(
-                "cost-merc",
-                mercenaryCost
-            );
-        };
-
-    /* =====================================================
-       QUEST SYSTEM
-       ===================================================== */
-
-    window.updateQuestsUI =
-        function updateQuestsUI() {
-
-            const quests =
-                window.gameData.quests;
-
-            /*
-             * KILLS
-             */
-
-            setText(
-                "q-kills",
-                quests.kills
-            );
-
-            /*
-             * MINES
-             */
-
-            setText(
-                "q-mines",
-                quests.mines
-            );
-
-            /*
-             * KILL QUEST BUTTON
-             */
-
-            const btnKills =
-                getElement(
-                    "btn-q-kills"
+                logMessage(
+                    "❌ Za mało złota."
                 );
 
-            if (btnKills) {
-
-                btnKills.style.borderColor =
-                    "";
-
-                if (
-                    quests.killsClaimed
-                ) {
-
-                    btnKills.disabled =
-                        true;
-
-                    btnKills.innerHTML =
-                        `
-                            ✅ ZROBIONE
-                        `;
-
-                } else if (
-                    quests.kills >= 10
-                ) {
-
-                    btnKills.disabled =
-                        false;
-
-                    btnKills.style.borderColor =
-                        "var(--accent-gold)";
-
-                    btnKills.innerHTML =
-                        `
-                            🎁 ODBIERZ —
-                            <span class="text-gold">
-                                1000 🪙
-                            </span>
-                        `;
-
-                } else {
-
-                    btnKills.disabled =
-                        true;
-
-                    btnKills.innerHTML =
-                        `
-                            🔒 1000 🪙
-                        `;
-                }
+                return;
             }
 
-            /*
-             * MINING QUEST BUTTON
-             */
+            g.gold -= cost;
 
-            const btnMines =
-                getElement(
-                    "btn-q-mines"
-                );
+            g.baseDps += 15;
 
-            if (btnMines) {
+            g.mercenaryLevel++;
 
-                btnMines.style.borderColor =
-                    "";
-
-                if (
-                    quests.minesClaimed
-                ) {
-
-                    btnMines.disabled =
-                        true;
-
-                    btnMines.innerHTML =
-                        `
-                            ✅ ZROBIONE
-                        `;
-
-                } else if (
-                    quests.mines >= 50
-                ) {
-
-                    btnMines.disabled =
-                        false;
-
-                    btnMines.style.borderColor =
-                        "var(--accent-gold)";
-
-                    btnMines.innerHTML =
-                        `
-                            🎁 ODBIERZ —
-                            <span class="text-accent">
-                                5 💠
-                            </span>
-                        `;
-
-                } else {
-
-                    btnMines.disabled =
-                        true;
-
-                    btnMines.innerHTML =
-                        `
-                            🔒 5 💠
-                        `;
-                }
-            }
-
-            /*
-             * PRESTIGE
-             */
-
-            setText(
-                "prestige-tokens",
-                quests
-                    ? window.gameData.prestige
-                    : 0
+            logMessage(
+                `🤖 Dron poziom ${g.mercenaryLevel}.`
             );
+        }
 
-            setText(
-                "prestige-amount",
-                window.gameData.prestige
-            );
 
-            setText(
-                "prestige-multiplier",
-                window.gameData.prestige *
-                50
-            );
-        };
-
-    /* =====================================================
-       QUEST CLAIM
-       ===================================================== */
-
-    window.claimQuest =
-        function claimQuest(type) {
-
-            const q =
-                window.gameData.quests;
-
-            let claimed =
-                false;
-
-            /*
-             * KILLS
-             */
+        else if (
+            type === "heal"
+        ) {
 
             if (
-                type === "kills" &&
-                q.kills >= 10 &&
-                !q.killsClaimed
+                g.gold < 200
             ) {
 
-                q.killsClaimed =
-                    true;
-
-                window.gameData.gold +=
-                    1000;
-
-                notify(
-                    "📜 Ukończono zadanie: Pogromca Bestii! +1000 🪙"
+                logMessage(
+                    "❌ Za mało złota."
                 );
 
-                claimed = true;
+                return;
             }
-
-            /*
-             * MINES
-             */
-
-            else if (
-                type === "mines" &&
-                q.mines >= 50 &&
-                !q.minesClaimed
-            ) {
-
-                q.minesClaimed =
-                    true;
-
-                window.gameData.mithril +=
-                    5;
-
-                notify(
-                    "📜 Ukończono zadanie: Górnik Przodowy! +5 💠"
-                );
-
-                claimed = true;
-            }
-
-            if (!claimed) {
-
-                notify(
-                    "❌ Zadanie nie jest jeszcze gotowe."
-                );
-
-                return false;
-            }
-
-            updateStatusUI();
-            updateQuestsUI();
-            saveGame();
-
-            return true;
-        };
-
-    /* =====================================================
-       PRESTIGE / REBIRTH
-       ===================================================== */
-
-    window.doPrestige =
-        function doPrestige() {
-
-            const g =
-                window.gameData;
 
             if (
-                g.level < 50
+                window.playerCurrentHp >=
+                window.playerMaxHp
             ) {
 
-                notify(
-                    "❌ Prestiż wymaga 50 Poziomu."
+                logMessage(
+                    "❤️ Masz pełne HP."
                 );
 
-                return false;
+                return;
             }
 
-            const confirmed =
-                window.confirm(
-                    "TWARDY RESET\n\n" +
-                    "Stracisz:\n" +
-                    "• Poziom\n" +
-                    "• Skille\n" +
-                    "• Złoto\n" +
-                    "• Żelazo\n" +
-                    "• Mithril\n" +
-                    "• Zadania\n\n" +
-                    "Zachowasz Ekwipunek.\n\n" +
-                    "Otrzymasz +50% do DMG, DPS i HP.\n\n" +
-                    "Czy chcesz aktywować Prestiż?"
-                );
+            g.gold -= 200;
 
-            if (!confirmed) {
-                return false;
-            }
-
-            /*
-             * +1 PRESTIGE
-             */
-
-            g.prestige++;
-
-            /*
-             * RESET RESOURCES
-             */
-
-            g.gold = 0;
-            g.iron = 0;
-            g.mithril = 0;
-
-            /*
-             * RESET LEVEL
-             */
-
-            g.level = 1;
-            g.exp = 0;
-            g.maxExp = 100;
-
-            /*
-             * RESET SKILLS
-             */
-
-            g.skillPoints = 0;
-
-            g.skills = {
-                hp: 0,
-                dmg: 0,
-                lifesteal: 0,
-                crit: 0
-            };
-
-            /*
-             * RESET QUESTS
-             */
-
-            g.quests = {
-                kills: 0,
-                mines: 0,
-                killsClaimed: false,
-                minesClaimed: false
-            };
-
-            /*
-             * HP
-             */
-
-            window.isDead = false;
-            window.isFighting = false;
-
-            /*
-             * Recalculate equipment
-             */
-
-            if (
-                typeof window.recalculatePlayerStats ===
-                "function"
-            ) {
-                window.recalculatePlayerStats();
-            }
-
-            window.playerCurrentHp =
-                window.playerMaxHp;
-
-            /*
-             * UI
-             */
-
-            updateStatusUI();
-            updateSkillsUI();
-            updateQuestsUI();
-            updateShopUI();
-
-            if (
-                typeof window.renderInventory ===
-                "function"
-            ) {
-                window.renderInventory();
-            }
-
-            /*
-             * EXPEDITION
-             */
-
-            const attackBtn =
-                getElement(
-                    "attack-btn"
-                );
-
-            const resumeBtn =
-                getElement(
-                    "resume-btn"
-                );
-
-            if (attackBtn) {
-                attackBtn.style.display =
-                    "block";
-            }
-
-            if (resumeBtn) {
-                resumeBtn.style.display =
-                    "none";
-            }
-
-            /*
-             * LOG
-             */
-
-            notify(
-                `🌌 PRESTIŻ ${g.prestige} AKTYWOWANY! +50% GLOBALNEGO MNOŻNIKA.`
+            window.healPlayer(
+                window.playerMaxHp * .5
             );
+        }
 
-            saveGame();
+        updateAllUI();
 
-            return true;
-        };
+        saveGame();
+    };
+
 
     /* =====================================================
-       EXP / LEVELING
+       XP
        ===================================================== */
 
     window.gainExp =
-        function gainExp(amount) {
+    function(amount) {
 
-            amount =
-                Math.max(
-                    0,
-                    safeNumber(
-                        amount
-                    )
-                );
+        const g =
+            window.gameData;
 
-            if (
-                amount <= 0
-            ) {
-                return false;
-            }
-
-            const g =
-                window.gameData;
-
-            g.exp +=
-                amount;
-
-            let levelUps =
-                0;
-
-            /*
-             * Obsługa wielu poziomów
-             * jednocześnie.
-             */
-
-            while (
-                g.exp >= g.maxExp
-            ) {
-
-                g.exp -=
-                    g.maxExp;
-
-                g.level++;
-
-                g.maxExp =
-                    Math.max(
-                        1,
-                        Math.floor(
-                            g.maxExp *
-                            1.5
-                        )
-                    );
-
-                /*
-                 * 2 punkty za poziom
-                 */
-
-                g.skillPoints +=
-                    2;
-
-                levelUps++;
-
-                /*
-                 * Pełne HP po level up
-                 */
-
-                if (
-                    typeof window.recalculatePlayerStats ===
-                    "function"
-                ) {
-                    window.recalculatePlayerStats();
-                }
-
-                window.playerCurrentHp =
-                    window.playerMaxHp;
-
-                notify(
-                    `⚡ AWANS! Poziom ${g.level}. +2 punkty skilli.`
-                );
-            }
-
-            /*
-             * UI
-             */
-
-            updateStatusUI();
-            updateSkillsUI();
-
-            if (
-                typeof window.updateQuestsUI ===
-                "function"
-            ) {
-                window.updateQuestsUI();
-            }
-
-            saveGame();
-
-            return levelUps;
-        };
-
-    /* =====================================================
-       SKILL UPGRADE
-       ===================================================== */
-
-    window.upgradeSkill =
-        function upgradeSkill(type) {
-
-            const g =
-                window.gameData;
-
-            const maxLevels = {
-                hp: 50,
-                dmg: 50,
-                lifesteal: 20,
-                crit: 25
-            };
-
-            if (
-                !Object.prototype.hasOwnProperty.call(
-                    maxLevels,
-                    type
-                )
-            ) {
-
-                console.warn(
-                    "Nieznany skill:",
-                    type
-                );
-
-                return false;
-            }
-
-            if (
-                g.skillPoints <= 0
-            ) {
-
-                notify(
-                    "❌ Brak punktów skilli."
-                );
-
-                return false;
-            }
-
-            if (
-                g.skills[type] >=
-                maxLevels[type]
-            ) {
-
-                notify(
-                    "🔒 Ten skill osiągnął maksymalny poziom."
-                );
-
-                return false;
-            }
-
-            /*
-             * LEVEL UP
-             */
-
-            g.skills[type]++;
-
-            g.skillPoints--;
-
-            /*
-             * Przelicz statystyki
-             */
-
-            if (
-                typeof window.recalculatePlayerStats ===
-                "function"
-            ) {
-                window.recalculatePlayerStats();
-            }
-
-            /*
-             * Jeżeli HP wzrosło,
-             * można automatycznie dodać
-             * różnicę do aktualnego HP.
-             */
-
-            if (
-                type === "hp"
-            ) {
-
-                const oldMaxHp =
-                    window.playerMaxHp;
-
-                /*
-                 * recalculatePlayerStats()
-                 * już ustawiło nowy max HP.
-                 *
-                 * Nie healujemy całkowicie,
-                 * tylko zwiększamy aktualne HP
-                 * o wartość nowego bonusu.
-                 */
-
-                if (
-                    window.playerCurrentHp >
-                    0
-                ) {
-
-                    window.playerCurrentHp =
-                        Math.min(
-                            window.playerMaxHp,
-                            window.playerCurrentHp +
-                            20
-                        );
-                }
-
-                /*
-                 * Zabezpieczenie dla bardzo starego
-                 * kodu, gdy oldMaxHp nie jest używane.
-                 */
-
-                void oldMaxHp;
-            }
-
-            updateSkillsUI();
-            updateStatusUI();
-
-            notify(
-                `🧠 Ulepszono skill: ${type} → poziom ${g.skills[type]}.`
+        g.exp +=
+            Math.max(
+                0,
+                Number(amount) || 0
             );
 
-            saveGame();
-
-            return true;
-        };
-
-    /* =====================================================
-       SKILL UI
-       ===================================================== */
-
-    window.updateSkillsUI =
-        function updateSkillsUI() {
-
-            const g =
-                window.gameData;
-
-            setText(
-                "skill-points",
-                g.skillPoints
-            );
-
-            const skills = [
-                "hp",
-                "dmg",
-                "lifesteal",
-                "crit"
-            ];
-
-            skills.forEach(
-                skill => {
-
-                    const element =
-                        getElement(
-                            `skill-lvl-${skill}`
-                        );
-
-                    if (element) {
-
-                        element.textContent =
-                            g.skills[skill];
-                    }
-                }
-            );
-        };
-
-    /* =====================================================
-       HEAL
-       ===================================================== */
-
-    window.healPlayer =
-        function healPlayer(
-            amount
+        while (
+            g.exp >= g.maxExp
         ) {
 
-            if (
-                window.isDead
-            ) {
-                return 0;
-            }
+            g.exp -=
+                g.maxExp;
 
-            amount =
-                Math.max(
-                    0,
-                    safeNumber(
-                        amount
-                    )
-                );
+            g.level++;
 
-            if (
-                amount <= 0
-            ) {
-                return 0;
-            }
-
-            const oldHp =
-                window.playerCurrentHp;
-
-            window.playerCurrentHp =
-                Math.min(
-                    window.playerMaxHp,
-                    window.playerCurrentHp +
-                    amount
-                );
-
-            const healed =
-                window.playerCurrentHp -
-                oldHp;
-
-            updateStatusUI();
-
-            return healed;
-        };
-
-    /* =====================================================
-       DAMAGE PLAYER
-       ===================================================== */
-
-    window.damagePlayer =
-        function damagePlayer(
-            amount
-        ) {
-
-            if (
-                window.isDead ||
-                !window.isFighting
-            ) {
-                return false;
-            }
-
-            amount =
-                Math.max(
-                    0,
-                    safeNumber(
-                        amount
-                    )
-                );
-
-            if (
-                amount <= 0
-            ) {
-                return false;
-            }
-
-            /*
-             * Defense można później
-             * dodać tutaj.
-             */
-
-            window.playerCurrentHp -=
-                amount;
-
-            if (
-                window.playerCurrentHp <= 0
-            ) {
-
-                window.playerCurrentHp =
-                    0;
-
-                playerDies();
-
-            } else {
-
-                updateStatusUI();
-            }
-
-            return true;
-        };
-
-    /* =====================================================
-       PLAYER DEATH
-       ===================================================== */
-
-    window.playerDies =
-        function playerDies() {
-
-            if (
-                window.isDead
-            ) {
-                return;
-            }
-
-            window.isDead =
-                true;
-
-            window.isFighting =
-                false;
-
-            /*
-             * Kara za śmierć:
-             * -20% gold
-             */
-
-            window.gameData.gold =
+            g.maxExp =
                 Math.floor(
-                    window.gameData.gold *
-                    0.8
+                    g.maxExp * 1.5
                 );
 
-            notify(
-                "<span class='text-red text-bold'>☠️ ZGINĄŁEŚ! Ekspedycja została wstrzymana.</span>"
-            );
-
-            /*
-             * Buttons
-             */
-
-            const attackBtn =
-                getElement(
-                    "attack-btn"
-                );
-
-            const resumeBtn =
-                getElement(
-                    "resume-btn"
-                );
-
-            if (attackBtn) {
-                attackBtn.style.display =
-                    "none";
-            }
-
-            if (resumeBtn) {
-                resumeBtn.style.display =
-                    "block";
-            }
-
-            /*
-             * Combat status
-             */
-
-            const status =
-                getElement(
-                    "combat-status"
-                );
-
-            if (status) {
-
-                status.innerHTML =
-                    `
-                        <span class="text-red text-bold">
-                            ☠️ POSTAĆ ZGINĘŁA
-                        </span>
-
-                        <br>
-
-                        <span class="text-dim">
-                            Ekspedycja wstrzymana.
-                        </span>
-                    `;
-            }
-
-            updateStatusUI();
-            saveGame();
-        };
-
-    /* =====================================================
-       RESUME EXPEDITION
-       ===================================================== */
-
-    window.resumeExpedition =
-        function resumeExpedition() {
+            g.skillPoints += 2;
 
             window.playerCurrentHp =
                 window.playerMaxHp;
 
-            window.isDead =
-                false;
+            logMessage(
+                `✨ AWANS! Osiągnięto poziom ${g.level}.`
+            );
+        }
 
-            window.isFighting =
-                true;
+        updateAllUI();
 
-            const attackBtn =
-                getElement(
+        saveGame();
+    };
+
+
+    /* =====================================================
+       SKILLS
+       ===================================================== */
+
+    window.upgradeSkill =
+    function(type) {
+
+        const max = {
+            hp: 50,
+            dmg: 50,
+            lifesteal: 20,
+            crit: 25
+        };
+
+        if (
+            window.gameData.skillPoints <= 0
+        ) {
+
+            logMessage(
+                "❌ Brak punktów umiejętności."
+            );
+
+            return;
+        }
+
+        if (
+            window.gameData.skills[type] >=
+            max[type]
+        ) {
+            return;
+        }
+
+        window.gameData.skills[type]++;
+        window.gameData.skillPoints--;
+
+        recalculatePlayerStats();
+
+        updateAllUI();
+
+        saveGame();
+    };
+
+
+    /* =====================================================
+       HP
+       ===================================================== */
+
+    window.healPlayer =
+    function(amount) {
+
+        if (
+            window.isDead
+        ) {
+            return;
+        }
+
+        window.playerCurrentHp =
+            Math.min(
+                window.playerMaxHp,
+                window.playerCurrentHp +
+                Math.max(
+                    0,
+                    Number(amount) || 0
+                )
+            );
+
+        updateStatus();
+    };
+
+
+    window.damagePlayer =
+    function(amount) {
+
+        if (
+            window.isDead ||
+            !window.isFighting
+        ) {
+            return;
+        }
+
+        window.playerCurrentHp -=
+            Math.max(
+                0,
+                Number(amount) || 0
+            );
+
+        if (
+            window.playerCurrentHp <= 0
+        ) {
+
+            window.playerCurrentHp = 0;
+
+            window.isDead = true;
+            window.isFighting = false;
+
+            logMessage(
+                "☠️ <b>ZGINĄŁEŚ!</b>"
+            );
+
+            const attack =
+                document.getElementById(
                     "attack-btn"
                 );
 
-            const resumeBtn =
-                getElement(
+            const resume =
+                document.getElementById(
                     "resume-btn"
                 );
 
-            if (attackBtn) {
-                attackBtn.style.display =
-                    "block";
-            }
-
-            if (resumeBtn) {
-                resumeBtn.style.display =
-                    "none";
-            }
-
-            updateStatusUI();
-
-            notify(
-                "🟢 Ekspedycja wznowiona."
-            );
-
-            /*
-             * Nowy potwór
-             */
-
-            if (
-                typeof window.spawnMonster ===
-                "function"
-            ) {
-
-                window.spawnMonster();
-            }
-
-            saveGame();
-        };
-
-    /* =====================================================
-       STATUS UI
-       ===================================================== */
-
-    window.updateStatusUI =
-        function updateStatusUI() {
-
-            const g =
-                window.gameData;
-
-            /*
-             * Resources
-             */
-
-            setText(
-                "gold-amount",
-                Math.floor(
-                    g.gold
-                )
-            );
-
-            setText(
-                "iron-amount",
-                Math.floor(
-                    g.iron
-                )
-            );
-
-            setText(
-                "mithril-amount",
-                Math.floor(
-                    g.mithril
-                )
-            );
-
-            setText(
-                "prestige-amount",
-                Math.floor(
-                    g.prestige
-                )
-            );
-
-            /*
-             * HP
-             */
-
-            const maxHp =
-                Math.max(
-                    1,
-                    safeNumber(
-                        window.playerMaxHp,
-                        100
-                    )
-                );
-
-            window.playerMaxHp =
-                maxHp;
-
-            window.playerCurrentHp =
-                clamp(
-                    safeNumber(
-                        window.playerCurrentHp,
-                        maxHp
-                    ),
-                    0,
-                    maxHp
-                );
-
-            const hpPercentage =
-                (
-                    window.playerCurrentHp /
-                    maxHp
-                ) *
-                100;
-
-            setWidth(
-                "player-hp-bar",
-                hpPercentage
-            );
-
-            setText(
-                "player-current-hp",
-                Math.floor(
-                    window.playerCurrentHp
-                )
-            );
-
-            setText(
-                "player-max-hp",
-                Math.floor(
-                    maxHp
-                )
-            );
-
-            /*
-             * HP kolor
-             */
-
-            const hpBar =
-                getElement(
-                    "player-hp-bar"
-                );
-
-            if (hpBar) {
-
-                hpBar.classList.remove(
-                    "player-hp-fill",
-                    "enemy-hp-fill"
-                );
-
-                if (
-                    hpPercentage <= 25
-                ) {
-
-                    hpBar.classList.add(
-                        "enemy-hp-fill"
-                    );
-
-                } else {
-
-                    hpBar.classList.add(
-                        "player-hp-fill"
-                    );
-                }
-            }
-
-            /*
-             * LEVEL
-             */
-
-            setText(
-                "player-level",
-                g.level
-            );
-
-            /*
-             * EXP
-             */
-
-            const expPercentage =
-                (
-                    g.exp /
-                    Math.max(
-                        1,
-                        g.maxExp
-                    )
-                ) *
-                100;
-
-            setWidth(
-                "exp-bar",
-                expPercentage
-            );
-        };
-
-    /* =====================================================
-       LOG SYSTEM
-       ===================================================== */
-
-    window.logMessage =
-        function logMessage(
-            message
-        ) {
-
-            const logDiv =
-                getElement(
-                    "battle-log"
-                );
-
-            /*
-             * Log może być wywoływany
-             * zanim UI zostanie załadowane.
-             */
-
-            if (!logDiv) {
-
-                console.log(
-                    message
-                );
-
-                return;
-            }
-
-            const time =
-                `<span class="text-dim">[${new Date().toLocaleTimeString("pl-PL")}]</span>`;
-
-            const entry =
-                document.createElement(
-                    "div"
-                );
-
-            entry.innerHTML =
-                `${time} ${message}`;
-
-            /*
-             * Najnowszy wpis na górze.
-             */
-
-            logDiv.prepend(
-                entry
-            );
-
-            /*
-             * Maksymalna liczba wpisów.
-             */
-
-            while (
-                logDiv.children.length >
-                100
-            ) {
-
-                logDiv.removeChild(
-                    logDiv.lastElementChild
+            if (attack) {
+                attack.classList.add(
+                    "hidden"
                 );
             }
-        };
 
-    /* =====================================================
-       RESET PLAYER HP
-       ===================================================== */
+            if (resume) {
+                resume.classList.remove(
+                    "hidden"
+                );
+            }
+        }
 
-    function restoreFullHp() {
+        updateStatus();
+    };
+
+
+    window.resumeExpedition =
+    function() {
 
         window.playerCurrentHp =
             window.playerMaxHp;
 
-        window.isDead =
-            false;
+        window.isDead = false;
+        window.isFighting = true;
 
-        updateStatusUI();
-    }
+        const attack =
+            document.getElementById(
+                "attack-btn"
+            );
 
-    /* =====================================================
-       AUTO ATTACK / GAME TICK
-       ===================================================== */
+        const resume =
+            document.getElementById(
+                "resume-btn"
+            );
 
-    let gameTickStarted =
-        false;
-
-    function startGameTick() {
-
-        if (
-            gameTickStarted
-        ) {
-            return;
+        if (attack) {
+            attack.classList.remove(
+                "hidden"
+            );
         }
 
-        gameTickStarted =
-            true;
+        if (resume) {
+            resume.classList.add(
+                "hidden"
+            );
+        }
 
-        /*
-         * TICK co sekundę.
-         */
+        if (
+            typeof window.spawnMonster ===
+            "function"
+        ) {
+            window.spawnMonster();
+        }
 
-        window.setInterval(
-            () => {
+        updateStatus();
+    };
 
-                /*
-                 * Autosave.
-                 */
 
-                saveGame();
+    /* =====================================================
+       UI
+       ===================================================== */
 
-                /*
-                 * Auto DPS.
-                 */
+    function updateStatus() {
 
-                if (
-                    window.isFighting &&
-                    !window.isDead
-                ) {
+        const g =
+            window.gameData;
 
-                    if (
-                        window.totalDps > 0 &&
-                        typeof window.autoAttack ===
-                            "function"
-                    ) {
+        text(
+            "gold-amount",
+            Math.floor(g.gold)
+        );
 
-                        window.autoAttack(
-                            window.totalDps
-                        );
-                    }
+        text(
+            "iron-amount",
+            Math.floor(g.iron)
+        );
 
-                    /*
-                     * Wróg atakuje.
-                     */
+        text(
+            "mithril-amount",
+            Math.floor(g.mithril)
+        );
 
-                    if (
-                        typeof window.enemyAttack ===
-                            "function"
-                    ) {
+        text(
+            "prestige-amount",
+            g.prestige
+        );
 
-                        window.enemyAttack();
-                    }
-                }
+        text(
+            "player-level",
+            g.level
+        );
 
-            },
-            1000
+        text(
+            "player-exp",
+            Math.floor(g.exp)
+        );
+
+        text(
+            "player-max-exp",
+            Math.floor(g.maxExp)
+        );
+
+        text(
+            "player-current-hp",
+            Math.floor(
+                window.playerCurrentHp
+            )
+        );
+
+        text(
+            "player-max-hp",
+            Math.floor(
+                window.playerMaxHp
+            )
+        );
+
+        const xp =
+            g.maxExp > 0
+                ? g.exp / g.maxExp * 100
+                : 0;
+
+        const xpBar =
+            document.getElementById(
+                "exp-bar"
+            );
+
+        if (xpBar) {
+            xpBar.style.width =
+                `${Math.min(100, xp)}%`;
+        }
+
+        const hpBar =
+            document.getElementById(
+                "player-hp-bar"
+            );
+
+        if (hpBar) {
+            hpBar.style.width =
+                `${
+                    Math.max(
+                        0,
+                        Math.min(
+                            100,
+                            window.playerCurrentHp /
+                            window.playerMaxHp *
+                            100
+                        )
+                    )
+                }%`;
+        }
+
+        text(
+            "combat-dmg",
+            window.totalDmg
+        );
+
+        text(
+            "combat-dps",
+            window.totalDps
+        );
+
+        text(
+            "combat-crit",
+            `${window.totalCrit}%`
+        );
+
+        text(
+            "combat-lifesteal",
+            `${window.totalLifesteal}%`
+        );
+
+        text(
+            "pickaxe-level",
+            g.pickaxeLevel
+        );
+
+        text(
+            "mercenary-level",
+            g.mercenaryLevel
+        );
+
+        text(
+            "skill-points",
+            g.skillPoints
+        );
+
+        text(
+            "skill-lvl-hp",
+            g.skills.hp
+        );
+
+        text(
+            "skill-lvl-dmg",
+            g.skills.dmg
+        );
+
+        text(
+            "skill-lvl-lifesteal",
+            g.skills.lifesteal
+        );
+
+        text(
+            "skill-lvl-crit",
+            g.skills.crit
+        );
+
+        text(
+            "q-kills",
+            g.quests.kills
+        );
+
+        text(
+            "q-mines",
+            g.quests.mines
+        );
+
+        text(
+            "prestige-multiplier",
+            g.prestige * 50
+        );
+
+        text(
+            "prestige-tokens",
+            g.prestige
         );
     }
 
-    /* =====================================================
-       INITIALIZATION
-       ===================================================== */
+    function updateAllUI() {
 
-    function initializeGame() {
+        updateStatus();
 
         if (
-            window.gameInitialized
+            typeof window.updateShopUI ===
+            "function"
+        ) {
+            window.updateShopUI();
+        }
+
+        if (
+            typeof window.updateQuestUI ===
+            "function"
+        ) {
+            window.updateQuestUI();
+        }
+
+        if (
+            typeof window.updateQuestsUI ===
+            "function"
+        ) {
+            window.updateQuestsUI();
+        }
+
+        if (
+            typeof window.renderInventory ===
+            "function"
+        ) {
+            window.renderInventory();
+        }
+    }
+
+
+    /* =====================================================
+       QUESTS
+       ===================================================== */
+
+    window.updateQuestsUI =
+    function() {
+
+        const q =
+            window.gameData.quests;
+
+        const kills =
+            document.getElementById(
+                "q-kills"
+            );
+
+        const mines =
+            document.getElementById(
+                "q-mines"
+            );
+
+        if (kills) {
+            kills.textContent =
+                q.kills;
+        }
+
+        if (mines) {
+            mines.textContent =
+                q.mines;
+        }
+
+        const kb =
+            document.getElementById(
+                "btn-q-kills"
+            );
+
+        const mb =
+            document.getElementById(
+                "btn-q-mines"
+            );
+
+        if (kb) {
+
+            kb.disabled =
+                q.kills < 10 ||
+                q.killsClaimed;
+
+            kb.textContent =
+                q.killsClaimed
+                    ? "✅ ODEBRANO"
+                    : "ODBIERZ 1000 🪙";
+        }
+
+        if (mb) {
+
+            mb.disabled =
+                q.mines < 50 ||
+                q.minesClaimed;
+
+            mb.textContent =
+                q.minesClaimed
+                    ? "✅ ODEBRANO"
+                    : "ODBIERZ 5 💎";
+        }
+    };
+
+
+    window.claimQuest =
+    function(type) {
+
+        const q =
+            window.gameData.quests;
+
+        if (
+            type === "kills" &&
+            q.kills >= 10 &&
+            !q.killsClaimed
+        ) {
+
+            q.killsClaimed = true;
+            window.gameData.gold += 1000;
+
+            logMessage(
+                "📜 Quest ukończony! +1000 🪙"
+            );
+        }
+
+        if (
+            type === "mines" &&
+            q.mines >= 50 &&
+            !q.minesClaimed
+        ) {
+
+            q.minesClaimed = true;
+            window.gameData.mithril += 5;
+
+            logMessage(
+                "📜 Quest ukończony! +5 💎"
+            );
+        }
+
+        updateAllUI();
+        saveGame();
+    };
+
+
+    /* =====================================================
+       PRESTIGE
+       ===================================================== */
+
+    window.doPrestige =
+    function() {
+
+        if (
+            window.gameData.level < 50
+        ) {
+
+            logMessage(
+                "❌ Prestiż wymaga poziomu 50."
+            );
+
+            return;
+        }
+
+        if (
+            !confirm(
+                "Aktywować Prestiż?\n\n" +
+                "Stracisz poziom, złoto, rudy " +
+                "i skille.\n\n" +
+                "Ekwipunek zostaje.\n\n" +
+                "+50% DMG / DPS / HP."
+            )
         ) {
             return;
         }
 
-        window.gameInitialized =
-            true;
+        window.gameData.prestige++;
 
-        /*
-         * Najpierw core save.
-         */
+        window.gameData.gold = 0;
+        window.gameData.iron = 0;
+        window.gameData.mithril = 0;
 
-        window.loadGame();
+        window.gameData.level = 1;
+        window.gameData.exp = 0;
+        window.gameData.maxExp = 100;
 
-        /*
-         * Inventory
-         */
+        window.gameData.skillPoints = 0;
+
+        window.gameData.skills = {
+            hp: 0,
+            dmg: 0,
+            lifesteal: 0,
+            crit: 0
+        };
+
+        window.gameData.quests = {
+            kills: 0,
+            mines: 0,
+            killsClaimed: false,
+            minesClaimed: false
+        };
+
+        recalculatePlayerStats();
+
+        window.playerCurrentHp =
+            window.playerMaxHp;
+
+        updateAllUI();
+
+        logMessage(
+            `✦ PRESTIŻ ${window.gameData.prestige}!`
+        );
+
+        saveGame();
+    };
+
+
+    /* =====================================================
+       LOG
+       ===================================================== */
+
+    window.logMessage =
+    function(message) {
+
+        const log =
+            document.getElementById(
+                "battle-log"
+            );
+
+        if (!log) {
+            return;
+        }
+
+        const row =
+            document.createElement(
+                "div"
+            );
+
+        row.innerHTML =
+            `<span style="color:#53637c">
+                [${new Date().toLocaleTimeString("pl-PL")}]
+            </span>
+            ${message}`;
+
+        log.prepend(row);
+
+        while (
+            log.children.length > 80
+        ) {
+            log.removeChild(
+                log.lastElementChild
+            );
+        }
+    };
+
+
+    /* =====================================================
+       COMBAT STATS
+       ===================================================== */
+
+    window.renderCombatStats =
+    function() {
+
+        text(
+            "combat-dmg",
+            window.totalDmg
+        );
+
+        text(
+            "combat-dps",
+            window.totalDps
+        );
+
+        text(
+            "combat-crit",
+            `${window.totalCrit}%`
+        );
+
+        text(
+            "combat-lifesteal",
+            `${window.totalLifesteal}%`
+        );
+    };
+
+
+    /* =====================================================
+       INIT
+       ===================================================== */
+
+    function init() {
+
+        loadGame();
 
         if (
             typeof window.loadInventory ===
             "function"
         ) {
-
-            try {
-
-                window.loadInventory();
-
-            } catch (error) {
-
-                console.error(
-                    "Błąd loadInventory():",
-                    error
-                );
-            }
+            window.loadInventory();
         }
-
-        /*
-         * Combat
-         */
 
         if (
             typeof window.loadCombat ===
             "function"
         ) {
-
-            try {
-
-                window.loadCombat();
-
-            } catch (error) {
-
-                console.error(
-                    "Błąd loadCombat():",
-                    error
-                );
-            }
+            window.loadCombat();
         }
 
-        /*
-         * UI
-         */
-
-        updateShopUI();
-        updateSkillsUI();
-        updateQuestsUI();
+        window.isFighting = true;
 
         if (
-            typeof window.recalculatePlayerStats ===
+            typeof window.spawnMonster ===
             "function"
         ) {
-
-            window.recalculatePlayerStats();
+            window.spawnMonster();
         }
 
-        restoreFullHp();
-        updateStatusUI();
+        setInterval(() => {
 
-        /*
-         * Start tick.
-         */
+            saveGame();
 
-        startGameTick();
+            if (
+                window.isFighting &&
+                !window.isDead
+            ) {
 
-        /*
-         * Domyślna zakładka.
-         */
+                if (
+                    window.totalDps > 0 &&
+                    typeof window.autoAttack ===
+                    "function"
+                ) {
+                    window.autoAttack(
+                        window.totalDps
+                    );
+                }
 
-        if (
-            !document.querySelector(
-                ".screen.active"
-            )
-        ) {
+                if (
+                    typeof window.enemyAttack ===
+                    "function"
+                ) {
+                    window.enemyAttack();
+                }
+            }
 
-            openTab(
-                "tab-mine"
-            );
-        }
-
-        /*
-         * Log startowy.
-         */
-
-        notify(
-            "🟢 D&E TERMINAL V6 — SYSTEM GOTOWY."
-        );
+        }, 1000);
     }
 
-    /* =====================================================
-       DOM READY
-       ===================================================== */
 
     if (
         document.readyState ===
@@ -2449,26 +1441,13 @@
 
         document.addEventListener(
             "DOMContentLoaded",
-            initializeGame,
-            {
-                once: true
-            }
+            init,
+            { once: true }
         );
 
     } else {
 
-        initializeGame();
+        init();
     }
-
-    /* =====================================================
-       BEFORE UNLOAD SAVE
-       ===================================================== */
-
-    window.addEventListener(
-        "beforeunload",
-        () => {
-            saveGame();
-        }
-    );
 
 })();
